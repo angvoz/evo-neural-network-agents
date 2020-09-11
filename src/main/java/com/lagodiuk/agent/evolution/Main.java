@@ -1,12 +1,12 @@
 /*******************************************************************************
  * Copyright 2012 Yuriy Lagodiuk
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,6 +16,7 @@
 package com.lagodiuk.agent.evolution;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.GridLayout;
 import java.awt.RenderingHints;
@@ -29,8 +30,10 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Random;
 import java.util.prefs.Preferences;
 
@@ -47,6 +50,8 @@ import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 
+import com.lagodiuk.agent.AbstractAgent;
+import com.lagodiuk.agent.Agent;
 import com.lagodiuk.agent.AgentsEnvironment;
 import com.lagodiuk.agent.Food;
 import com.lagodiuk.agent.MovingFood;
@@ -71,9 +76,9 @@ public class Main {
 
 	private static volatile boolean play = true;
 
-	private static volatile boolean staticFood = true;
+	private static volatile boolean staticFood = false;
 
-	private static volatile boolean regenerateFood = true;
+	private static volatile boolean regenerateFood = false;
 
 	// UI
 
@@ -105,6 +110,8 @@ public class Main {
 
 	private static JProgressBar progressBar;
 
+	private static JLabel statusBar;
+
 	private static JLabel populationInfoLabel;
 
 	private static BufferedImage displayEnvironmentBufferedImage;
@@ -120,14 +127,14 @@ public class Main {
 		// constants
 		int gaPopulationSize = 5;
 		int parentalChromosomesSurviveCount = 1;
-		int environmentWidth = 600;
-		int environmentHeight = 400;
-		int agentsCount = 15;
-		int foodCount = 10;
+		int environmentWidth = 1470;
+		int environmentHeight = 850;
+		int agentsCount = 50;
+		int foodCount = 1000 - agentsCount*Agent.STARTING_ENERGY;
 
 		initializeGeneticAlgorithm(gaPopulationSize, parentalChromosomesSurviveCount, null);
 
-		initializeEnvironment(environmentWidth, environmentHeight, agentsCount, foodCount);
+		initializeEnvironment(environmentWidth, environmentHeight - 11, agentsCount, foodCount);
 
 		initializeCanvas(environmentWidth, environmentHeight);
 
@@ -154,13 +161,66 @@ public class Main {
 		mainEnvironmentLoop();
 	}
 
+	private static void updateStatusBar(AgentsEnvironment env) {
+		int countFishes = 0;
+		int countFood = 0;
+		int energyReserve = env.getEnergyReserve();
+		int countEnergy = 0 + energyReserve;
+		int longestGeneration = 0;
+		int shortestGeneration = Integer.MAX_VALUE;
+		HashMap<Integer, Integer> generationCountMap = new HashMap<>();
+		for (AbstractAgent agent : env.getAgents()) {
+			if (agent instanceof Food) {
+				countFood++;
+				countEnergy += 1;
+			} else if (agent instanceof Agent) {
+				countFishes++;
+				countEnergy += ((Agent) agent).getEnergy();
+				if (agent instanceof NeuralNetworkDrivenAgent) {
+					int generation = ((NeuralNetworkDrivenAgent) agent).getGeneration();
+					longestGeneration = Math.max(generation, longestGeneration);
+					shortestGeneration = Math.min(generation, shortestGeneration);
+					Integer count = generationCountMap.get(generation);
+					if (count == null) {
+						count = 0;
+					}
+					count++;
+					generationCountMap.put(generation, count);
+				}
+			}
+		}
+		String biggestGenerationStr = "";
+		int biggestCount = 0;
+		for (Entry<Integer, Integer> entry : generationCountMap.entrySet()) {
+			Integer gen = entry.getKey();
+			Integer count = entry.getValue();
+			if (count >= biggestCount) {
+				if (count > biggestCount) {
+					biggestGenerationStr = "" + gen + "(" + count + " fish)";
+				} else {
+					biggestGenerationStr = biggestGenerationStr + ", " + gen + "(" + count + " fish)";
+				}
+				biggestCount = count;
+			}
+		}
+		statusBar.setText("Time: " + (int) env.getTime()
+		+ ",   Energy Total: " + countEnergy
+		+ ",   Energy Reserve: " + energyReserve
+		+ ",   Food: " + countFood
+		+ ",   Fishes: " + countFishes
+		+ ",   Mutations: " + NeuralNetworkDrivenAgent.getMutationCount()
+		+ ",   Shortest/Biggest/Longest Generation: " + shortestGeneration + "(" + generationCountMap.get(shortestGeneration) + " fish)" + "/" + biggestGenerationStr + "/" + longestGeneration + "(" + generationCountMap.get(longestGeneration) + " fish)"
+				);
+	}
+
 	private static void mainEnvironmentLoop() throws InterruptedException {
 		for (;;) {
-			Thread.sleep(50);
+			Thread.sleep(5);
 			if (play) {
 				environment.timeStep();
 			}
 			Visualizator.paintEnvironment(displayEnvironmentCanvas, environment);
+			updateStatusBar(environment);
 			SwingUtilities.invokeLater(new Runnable() {
 				@Override
 				public void run() {
@@ -272,6 +332,10 @@ public class Main {
 		progressBar.setValue(0);
 		progressBar.setVisible(false);
 		appFrame.add(progressBar, BorderLayout.SOUTH);
+
+		statusBar = new JLabel();
+		statusBar.setPreferredSize(new Dimension(100, 16));
+		appFrame.add(statusBar, java.awt.BorderLayout.SOUTH);
 
 		populationInfoLabel = new JLabel("Population: " + populationNumber, SwingConstants.CENTER);
 		appFrame.add(populationInfoLabel, BorderLayout.NORTH);
