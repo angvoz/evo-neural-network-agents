@@ -25,14 +25,11 @@ public class Agent implements AbstractAgent {
 	private static final double RADIUS = 5;
 
 	private double x;
-
 	private double y;
-
 	private double angle;
-
 	private double speed;
-
 	private int energy;
+	private double age;
 
 	public Agent(double x, double y, double angle) {
 		this.x = x;
@@ -40,6 +37,7 @@ public class Agent implements AbstractAgent {
 		this.speed = 0;
 		this.angle = angle;
 		this.energy = STARTING_ENERGY;
+		this.age = 0;
 	}
 
 	public void move() {
@@ -108,6 +106,15 @@ public class Agent implements AbstractAgent {
 		this.energy = energy;
 	}
 
+	public int growOlder() {
+		int oldEnergy = energy;
+		this.age++;
+		if (age % 100 == 0) {
+			this.energy = energy - 1;
+		}
+		return oldEnergy - energy;
+	}
+
 	public void eatFood(Food food) {
 		this.energy++;
 	}
@@ -117,13 +124,14 @@ public class Agent implements AbstractAgent {
 		// Stub
 	}
 
+	public boolean isPregnant() {
+		return energy >= REPRODUCE_ENERGY_TRIGGER;
+	}
+
 	public Agent reproduce() {
-		if (energy >= REPRODUCE_ENERGY_TRIGGER) {
-			double newAngle = new Random().nextDouble();
-			Agent newAgent = new Agent(this.x, this.y, newAngle);
-			energy = REPRODUCE_ENERGY_TRIGGER - newAgent.getEnergy();
-			return newAgent;
-		}
-		return null;
+		double newAngle = new Random().nextDouble();
+		Agent newAgent = new Agent(this.x, this.y, newAngle);
+		energy = REPRODUCE_ENERGY_TRIGGER - newAgent.getEnergy();
+		return newAgent;
 	}
 }
