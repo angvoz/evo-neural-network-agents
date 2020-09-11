@@ -1,12 +1,12 @@
 /*******************************************************************************
  * Copyright 2012 Yuriy Lagodiuk
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,7 +15,12 @@
  ******************************************************************************/
 package com.lagodiuk.agent;
 
+import java.util.Random;
+
 public class Agent implements AbstractAgent {
+
+	public static final int STARTING_ENERGY = 6;
+	public static final int REPRODUCE_ENERGY_TRIGGER = 10;
 
 	private double x;
 
@@ -25,11 +30,14 @@ public class Agent implements AbstractAgent {
 
 	private double speed;
 
+	private int energy;
+
 	public Agent(double x, double y, double angle) {
 		this.x = x;
 		this.y = y;
 		this.speed = 0;
 		this.angle = angle;
+		this.energy = STARTING_ENERGY;
 	}
 
 	public void move() {
@@ -85,9 +93,33 @@ public class Agent implements AbstractAgent {
 		return ry;
 	}
 
+	public int getEnergy() {
+		return energy;
+	}
+
+	public void setEnergy(int newEnergy) {
+		if (newEnergy < 0) {
+			throw new RuntimeException("Attempt to set negative energy=" + newEnergy);
+		}
+		energy = newEnergy;
+	}
+
+	public void eatFood(Food food) {
+		energy++;
+	}
+
 	@Override
 	public void interact(AgentsEnvironment env) {
 		// Stub
 	}
 
+	public Agent reproduce() {
+		if (energy >= REPRODUCE_ENERGY_TRIGGER) {
+			double newAngle = new Random().nextDouble();
+			Agent newAgent = new Agent(this.x, this.y, newAngle);
+			energy = REPRODUCE_ENERGY_TRIGGER - newAgent.getEnergy();
+			return newAgent;
+		}
+		return null;
+	}
 }
