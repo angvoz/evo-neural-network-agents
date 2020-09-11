@@ -93,6 +93,36 @@ public class NeuralNetworkDrivenAgent extends Agent {
 		this.setAngle(newAngle);
 		this.setSpeed(newSpeed);
 
+		for (Agent otherAgent : env.filter(Agent.class)) {
+			if (this != otherAgent) {
+				double futureDistance = this.module(otherAgent.getX() - (this.getX() + this.getRx() * this.getSpeed()),
+						otherAgent.getY() - (this.getY() + this.getRy() * this.getSpeed()));
+				if (futureDistance < this.getRadius() * 2 + 3) {
+					// Check if the agent moves towards the other one (angle less than 90 degree)
+					double ux = otherAgent.getX() - this.getX();
+					double uy = otherAgent.getY() - this.getY();
+					double vx = this.getRx();
+					double vy = this.getRy();
+					double d = ux*vx + uy*vy;
+					if (d > 0) {
+						// if less than 90 degree move the agent in opposite direction
+						newAngle = Math.atan2(uy, ux) + Math.PI/2;
+						this.setAngle(newAngle);
+						// if the other agent not moving move it
+						if (otherAgent.getSpeed() == 0) {
+							otherAgent.setAngle(newAngle + Math.PI);
+							otherAgent.setSpeed(maxSpeed);
+							otherAgent.move();
+						}
+						if (this.getSpeed() == 0) {
+							this.setSpeed(maxSpeed);
+						}
+						break;
+					}
+				}
+			}
+		}
+
 		this.move();
 	}
 
