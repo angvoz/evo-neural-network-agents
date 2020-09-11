@@ -1,12 +1,12 @@
 /*******************************************************************************
  * Copyright 2012 Yuriy Lagodiuk
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -17,6 +17,7 @@ package com.lagodiuk.agent.evolution;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Random;
 
 import com.lagodiuk.agent.AbstractAgent;
 import com.lagodiuk.agent.Agent;
@@ -40,10 +41,19 @@ public class NeuralNetworkDrivenAgent extends Agent {
 
 	private static final double FOOD = 10;
 
+	private static final int MUTATE_CHANCE_NEWBORN = 10;
+
 	private volatile NeuralNetwork brain;
+
+	private static volatile long countMutation = 0;
+
+	private int generation;
+
+	private Random random = new Random();
 
 	public NeuralNetworkDrivenAgent(double x, double y, double angle) {
 		super(x, y, angle);
+		this.generation = 0;
 	}
 
 	/**
@@ -251,5 +261,40 @@ public class NeuralNetworkDrivenAgent extends Agent {
 			}
 		}
 		return nn;
+	}
+
+	private void mutate(int mutateChance) {
+		if (brain instanceof OptimizableNeuralNetwork && random.nextInt() % mutateChance == 0) {
+			countMutation++;
+			brain = ((OptimizableNeuralNetwork) brain).mutate();
+			if (random.nextInt() % mutateChance == 0) {
+				// double mutation
+				countMutation++;
+				brain = ((OptimizableNeuralNetwork) brain).mutate();
+			}
+			generation++;
+		}
+	}
+
+	@Override
+	public NeuralNetworkDrivenAgent reproduce() {
+		NeuralNetworkDrivenAgent newAgent = null;
+		if (getEnergy() >= REPRODUCE_ENERGY_TRIGGER) {
+			double newAngle = random.nextDouble();
+			newAgent = new NeuralNetworkDrivenAgent(this.getX(), this.getY(), newAngle);
+			newAgent.generation = this.generation;
+			newAgent.setBrain(brain);
+			newAgent.mutate(MUTATE_CHANCE_NEWBORN);
+			setEnergy(getEnergy() - newAgent.getEnergy());
+		}
+		return newAgent;
+	}
+
+	public int getGeneration() {
+		return this.generation;
+	}
+
+	static public long getMutationCount() {
+		return countMutation;
 	}
 }
