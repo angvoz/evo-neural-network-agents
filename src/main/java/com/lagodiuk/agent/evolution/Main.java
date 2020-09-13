@@ -249,8 +249,7 @@ public class Main {
 			}
 		});
 
-		NeuralNetwork brain = ga.getBest();
-		initializeAgents(brain, agentsCount);
+		initializeAgents(agentsCount);
 		initializeFood(foodCount);
 	}
 
@@ -593,7 +592,7 @@ public class Main {
 		});
 	}
 
-	private static void initializeAgents(NeuralNetwork brain, int agentsCount) {
+	private static void initializeAgents(int agentsCount) {
 		int environmentWidth = environment.getWidth();
 		int environmentHeight = environment.getHeight();
 
@@ -603,6 +602,7 @@ public class Main {
 			double direction = random.nextDouble() * 2 * Math.PI;
 
 			NeuralNetworkDrivenAgent agent = new NeuralNetworkDrivenAgent(x, y, direction);
+			NeuralNetwork brain = NeuralNetworkDrivenAgent.randomNeuralNetworkBrain();
 			agent.setBrain(brain);
 
 			environment.addAgent(agent);
