@@ -23,6 +23,23 @@ import com.lagodiuk.agent.AgentsEnvironment;
 import com.lagodiuk.agent.Food;
 
 public class Visualizator {
+	private static void setFlagOnFood(Graphics2D canvas, Food food, Color color) {
+		if (food != null) {
+			canvas.setColor(color);
+			// Small triangle flag
+			int x0 = (int) food.getX();
+			int y0 = (int) food.getY() - (int)food.getRadius()*2 - 1;
+			int x1 = x0;
+			int y1 = y0 - 8;
+			int x2 = x0 + 6;
+			int y2 = y0 - 6;
+			int x3 = x0;
+			int y3 = y0 - 4;
+			canvas.drawLine(x0, y0, x1, y1);
+			canvas.drawLine(x1, y1, x2, y2);
+			canvas.drawLine(x3, y3, x2, y2);
+		}
+	}
 
 	public static void paintEnvironment(Graphics2D canvas, AgentsEnvironment environment) {
 		canvas.clearRect(0, 0, environment.getWidth(), environment.getHeight());
@@ -65,9 +82,7 @@ public class Visualizator {
 
 			int generation = ((NeuralNetworkDrivenAgent) agent).getGeneration();
 			if (generation == maxGeneration) {
-
 				canvas.setColor(Color.MAGENTA);
-
 				{
 					// Big triangle flag
 					int triX1 = x;
@@ -92,6 +107,25 @@ public class Visualizator {
 					canvas.drawLine(triX1, triY1, triX2, triY2);
 					canvas.drawLine(triX3, triY3, triX2, triY2);
 				}
+
+				// Find nearest food
+				Food nearestFood_1 = null;
+				Food nearestFood_2 = null;
+				double nearestFoodDist = Double.MAX_VALUE;
+
+				for (Food currFood : environment.filter(Food.class)) {
+					// agent can see only ahead
+					if (((NeuralNetworkDrivenAgent) agent).inSight(currFood)) {
+						double currFoodDist = ((NeuralNetworkDrivenAgent) agent).distanceTo(currFood);
+						if ((nearestFood_1 == null) || (currFoodDist <= nearestFoodDist)) {
+							nearestFood_2 = nearestFood_1;
+							nearestFood_1 = currFood;
+							nearestFoodDist = currFoodDist;
+						}
+					}
+				}
+				setFlagOnFood(canvas, nearestFood_1, Color.MAGENTA);
+				setFlagOnFood(canvas, nearestFood_2, Color.MAGENTA);
 			}
 		}
 	}
