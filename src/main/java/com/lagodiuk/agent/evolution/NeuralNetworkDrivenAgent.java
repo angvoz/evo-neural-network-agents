@@ -292,6 +292,10 @@ public class NeuralNetworkDrivenAgent extends Agent {
 		return this.generation;
 	}
 
+	public void setGeneration(int gen) {
+		this.generation = gen;
+	}
+
 	static public long getMutationCount() {
 		return countMutation;
 	}
