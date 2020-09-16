@@ -222,10 +222,10 @@ public class NeuralNetworkDrivenAgent extends Agent {
 	}
 
 	private double normalizeSpeed(double speed) {
-		double abs = Math.abs(speed);
-		if (abs > maxSpeed) {
-			double sign = Math.signum(speed);
-			speed = sign * (abs - (Math.floor(abs / maxSpeed) * maxSpeed));
+		if (speed > maxSpeed) {
+			speed = maxSpeed;
+		} else if (speed < 0) {
+			speed = 0;
 		}
 		return speed;
 	}
@@ -234,7 +234,7 @@ public class NeuralNetworkDrivenAgent extends Agent {
 		double abs = Math.abs(angle);
 		if (abs > maxDeltaAngle) {
 			double sign = Math.signum(angle);
-			angle = sign * (abs - (Math.floor(abs / maxDeltaAngle) * maxDeltaAngle));
+			angle = sign * maxDeltaAngle;
 		}
 		return angle;
 	}
