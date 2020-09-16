@@ -1,12 +1,12 @@
 /*******************************************************************************
  * Copyright 2012 Yuriy Lagodiuk
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -47,6 +47,16 @@ public enum ThresholdFunction {
 			ret.add(b);
 			return ret;
 		}
+
+		@Override
+		public List<Double> getRandomParams() {
+			double a = random.nextDouble() - 0.5;
+			double b = random.nextDouble() - 0.5;
+			List<Double> ret = new LinkedList<Double>();
+			ret.add(a);
+			ret.add(b);
+			return ret;
+		}
 	},
 	@XmlEnumValue("SIGN")
 	SIGN {
@@ -63,6 +73,14 @@ public enum ThresholdFunction {
 		@Override
 		public List<Double> getDefaultParams() {
 			double threshold = 0;
+			List<Double> ret = new LinkedList<Double>();
+			ret.add(threshold);
+			return ret;
+		}
+
+		@Override
+		public List<Double> getRandomParams() {
+			double threshold = random.nextDouble() - 0.5;
 			List<Double> ret = new LinkedList<Double>();
 			ret.add(threshold);
 			return ret;
@@ -89,6 +107,25 @@ public enum ThresholdFunction {
 			ret.add(c);
 			return ret;
 		}
+
+		@Override
+		public List<Double> getRandomParams() {
+			double a = random.nextDouble() - 0.5;
+			double b = random.nextDouble() - 0.5;
+			double c = random.nextDouble() - 0.5;
+			List<Double> ret = new ArrayList<Double>(3);
+			ret.add(a);
+			ret.add(b);
+			ret.add(c);
+			return ret;
+		}
+	},
+	@XmlEnumValue("RANDOM")
+	RANDOM {
+		@Override
+		public double calculate(double value, List<Double> params) {
+			return random.nextDouble() - 0.5;
+		};
 	};
 
 	private static final Random random = new Random();
@@ -104,6 +141,11 @@ public enum ThresholdFunction {
 	}
 
 	public List<Double> getDefaultParams() {
+		// Stub
+		return Collections.emptyList();
+	}
+
+	public List<Double> getRandomParams() {
 		// Stub
 		return Collections.emptyList();
 	}
