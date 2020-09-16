@@ -80,6 +80,27 @@ public class Visualizator {
 
 			canvas.drawLine(x, y, rx, ry);
 
+			double angle = agent.getAngle();
+			double theta = 0.3;
+			int radiusEyeBase = agentRadius + -1;
+			int radiusEye = 2;
+
+			canvas.setColor(Color.WHITE);
+			{
+				double rxEye1 = -Math.sin(angle + theta);
+				int xEye1 = (int) (rxEye1*radiusEyeBase + x - (double)radiusEye/2);
+				double ryEye1 = Math.cos(angle + theta);
+				int yEye1 = (int) (ryEye1*radiusEyeBase + y - (double)radiusEye/2);
+				canvas.drawOval(xEye1, yEye1, radiusEye, radiusEye);
+			}
+			{
+				double rxEye1 = -Math.sin(angle - theta);
+				int xEye1 = (int) (rxEye1*radiusEyeBase + x - (double)radiusEye/2);
+				double ryEye1 = Math.cos(angle - theta);
+				int yEye1 = (int) (ryEye1*radiusEyeBase + y - (double)radiusEye/2);
+				canvas.drawOval(xEye1, yEye1, radiusEye, radiusEye);
+			}
+
 			int generation = ((NeuralNetworkDrivenAgent) agent).getGeneration();
 			if (generation == maxGeneration) {
 				canvas.setColor(Color.MAGENTA);
