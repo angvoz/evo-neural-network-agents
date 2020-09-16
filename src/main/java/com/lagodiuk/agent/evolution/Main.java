@@ -341,7 +341,7 @@ public class Main {
 						NeuralNetwork newBrain = NeuralNetwork.unmarsall(in);
 						in.close();
 
-						setAgentBrains(newBrain);
+						setAgentBrains(newBrain, 0);
 
 						OptimizableNeuralNetwork optimizableNewBrain = new OptimizableNeuralNetwork(newBrain);
 						int populationSize = ga.getPopulation().getSize();
@@ -403,7 +403,7 @@ public class Main {
 
 				NeuralNetwork newBrain = ga.getBest();
 
-				setAgentBrains(newBrain);
+				setAgentBrains(newBrain, 0);
 
 				// reset population number counter
 				populationNumber = 0;
@@ -457,7 +457,7 @@ public class Main {
 						populationNumber += iterCount;
 
 						NeuralNetwork newBrain = ga.getBest();
-						setAgentBrains(newBrain);
+						setAgentBrains(newBrain, populationNumber);
 
 						SwingUtilities.invokeLater(new Runnable() {
 							@Override
@@ -596,9 +596,10 @@ public class Main {
 		});
 	}
 
-	private static void setAgentBrains(NeuralNetwork newBrain) {
+	private static void setAgentBrains(NeuralNetwork newBrain, int generation) {
 		for (NeuralNetworkDrivenAgent agent : environment.filter(NeuralNetworkDrivenAgent.class)) {
 			agent.setBrain(newBrain.clone());
+			agent.setGeneration(generation);
 		}
 	}
 }
