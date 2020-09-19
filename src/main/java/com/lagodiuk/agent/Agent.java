@@ -22,6 +22,8 @@ public class Agent implements AbstractAgent {
 	public static final int STARTING_ENERGY = 6;
 	public static final int REPRODUCE_ENERGY_TRIGGER = 10;
 
+	private static final double RADIUS = 5;
+
 	private double x;
 
 	private double y;
@@ -65,6 +67,11 @@ public class Agent implements AbstractAgent {
 	@Override
 	public void setY(double y) {
 		this.y = y;
+	}
+
+	@Override
+	public double getRadius() {
+		return RADIUS;
 	}
 
 	public double getSpeed() {
