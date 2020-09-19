@@ -19,6 +19,8 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+import com.lagodiuk.agent.evolution.NeuralNetworkDrivenAgent;
+
 public class AgentsEnvironment {
 
 	private int width;
@@ -115,6 +117,16 @@ public class AgentsEnvironment {
 			}
 		}
 		return filtered;
+	}
+
+	public int getLongestGeneration() {
+		int maxGeneration = -1;
+		for (AbstractAgent agent : this.getAgents()) {
+			if (agent instanceof NeuralNetworkDrivenAgent) {
+				maxGeneration = Math.max(((NeuralNetworkDrivenAgent) agent).getGeneration(), maxGeneration);
+			}
+		}
+		return maxGeneration;
 	}
 
 	public int getEnergyReserve() {
