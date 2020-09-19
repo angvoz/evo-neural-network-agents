@@ -63,6 +63,7 @@ import com.lagodiuk.nn.NeuralNetwork;
 import com.lagodiuk.nn.genetic.OptimizableNeuralNetwork;
 
 public class Main {
+	private static Visualizator visualizator;
 
 	private static final String PREFS_KEY_BRAINS_DIRECTORY = "BrainsDirectory";
 
@@ -219,7 +220,7 @@ public class Main {
 			if (play) {
 				environment.timeStep();
 			}
-			Visualizator.paintEnvironment(displayEnvironmentCanvas, environment);
+			visualizator.paintEnvironment(displayEnvironmentCanvas);
 			updateStatusBar(environment);
 			SwingUtilities.invokeLater(new Runnable() {
 				@Override
@@ -239,6 +240,8 @@ public class Main {
 
 	private static void initializeEnvironment(int environmentWidth, int environmentHeight, int agentsCount, int foodCount) {
 		environment = new AgentsEnvironment(environmentWidth, environmentHeight);
+		visualizator = new Visualizator(environment);
+
 		environment.addListener(new EatenFoodObserver() {
 			@Override
 			protected void addRandomPieceOfFood(AgentsEnvironment env) {
