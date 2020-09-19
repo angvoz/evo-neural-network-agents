@@ -15,45 +15,13 @@
  ******************************************************************************/
 package com.lagodiuk.agent;
 
-public class Food implements AbstractAgent {
-	private static double RADIUS = 2;
+public interface IAgent {
+	double getRadius();
+	double getX();
+	void setX(double x);
+	double getY();
+	void setY(double y);
 
-	private double x;
-
-	private double y;
-
-	public Food(double x, double y) {
-		this.x = x;
-		this.y = y;
-	}
-
-	@Override
-	public double getX() {
-		return this.x;
-	}
-
-	@Override
-	public double getY() {
-		return this.y;
-	}
-
-	@Override
-	public void setX(double x) {
-		this.x = x;
-	}
-
-	@Override
-	public void setY(double y) {
-		this.y = y;
-	}
-
-	@Override
-	public double getRadius() {
-		return RADIUS;
-	}
-
-	@Override
-	public void interact(AgentsEnvironment env) {
-		// Stub
-	}
+	public int getEnergy();
+	void interact(AgentsEnvironment env);
 }

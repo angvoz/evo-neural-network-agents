@@ -18,12 +18,12 @@ package com.lagodiuk.agent.evolution;
 import java.awt.Color;
 import java.awt.Graphics2D;
 
-import com.lagodiuk.agent.Agent;
 import com.lagodiuk.agent.AgentsEnvironment;
-import com.lagodiuk.agent.Food;
+import com.lagodiuk.agent.FertileAgent;
+import com.lagodiuk.agent.IFood;
 
 public class Visualizator {
-	private static void setFlagOnFood(Graphics2D canvas, Food food, Color color) {
+	private static void setFlagOnFood(Graphics2D canvas, IFood food, Color color) {
 		if (food != null) {
 			canvas.setColor(color);
 			// Small triangle flag
@@ -45,7 +45,7 @@ public class Visualizator {
 		canvas.clearRect(0, 0, environment.getWidth(), environment.getHeight());
 
 		canvas.setColor(new Color(255, 255, 0));
-		for (Food food : environment.filter(Food.class)) {
+		for (IFood food : environment.getFood()) {
 			int x = (int) food.getX();
 			int y = (int) food.getY();
 			int foodRadius = (int)food.getRadius();
@@ -55,7 +55,7 @@ public class Visualizator {
 
 		int maxGeneration = environment.getLongestGeneration();
 
-		for (Agent agent : environment.filter(Agent.class)) {
+		for (FertileAgent agent : environment.getFishes()) {
 			int x = (int) agent.getX();
 			int y = (int) agent.getY();
 			int agentRadius = (int)agent.getRadius();
@@ -130,11 +130,11 @@ public class Visualizator {
 				}
 
 				// Find nearest food
-				Food nearestFood_1 = null;
-				Food nearestFood_2 = null;
+				IFood nearestFood_1 = null;
+				IFood nearestFood_2 = null;
 				double nearestFoodDist = Double.MAX_VALUE;
 
-				for (Food currFood : environment.filter(Food.class)) {
+				for (IFood currFood : environment.getFood()) {
 					// agent can see only ahead
 					if (((NeuralNetworkDrivenAgent) agent).inSight(currFood)) {
 						double currFoodDist = ((NeuralNetworkDrivenAgent) agent).distanceTo(currFood);

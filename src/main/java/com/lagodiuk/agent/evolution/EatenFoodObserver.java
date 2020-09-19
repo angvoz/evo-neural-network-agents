@@ -18,9 +18,9 @@ package com.lagodiuk.agent.evolution;
 import java.util.LinkedList;
 import java.util.List;
 
-import com.lagodiuk.agent.Agent;
 import com.lagodiuk.agent.AgentsEnvironment;
 import com.lagodiuk.agent.AgentsEnvironmentObserver;
+import com.lagodiuk.agent.FertileAgent;
 
 /**
  * Calculating eaten pieces of food
@@ -34,20 +34,20 @@ public class EatenFoodObserver implements AgentsEnvironmentObserver {
 	public void notify(AgentsEnvironment env) {
 		this.score += env.countEatenFood();
 
-		List<Agent> collidedFishes = this.getCollidedFishes(env);
+		List<FertileAgent> collidedFishes = this.getCollidedFishes(env);
 		this.score -= collidedFishes.size() * 0.5;
 	}
 
-	private List<Agent> getCollidedFishes(AgentsEnvironment env) {
-		List<Agent> collidedFishes = new LinkedList<Agent>();
+	private List<FertileAgent> getCollidedFishes(AgentsEnvironment env) {
+		List<FertileAgent> collidedFishes = new LinkedList<FertileAgent>();
 
-		List<Agent> allFishes = env.getFishes();
+		List<FertileAgent> allFishes = env.getFishes();
 		int fishesCount = allFishes.size();
 
 		for (int i = 0; i < (fishesCount - 1); i++) {
-			Agent firstFish = allFishes.get(i);
+			FertileAgent firstFish = allFishes.get(i);
 			for (int j = i + 1; j < fishesCount; j++) {
-				Agent secondFish = allFishes.get(j);
+				FertileAgent secondFish = allFishes.get(j);
 				double distanceToSecondFish = this.module(firstFish.getX() - secondFish.getX(), firstFish.getY() - secondFish.getY());
 				if (distanceToSecondFish < maxFishesDistance) {
 					collidedFishes.add(secondFish);

@@ -18,7 +18,8 @@ package com.lagodiuk.agent.evolution;
 import java.util.Random;
 
 import com.lagodiuk.agent.AgentsEnvironment;
-import com.lagodiuk.agent.Food;
+import com.lagodiuk.agent.IFood;
+import com.lagodiuk.agent.StaticFood;
 import com.lagodiuk.ga.Fitness;
 import com.lagodiuk.nn.genetic.OptimizableNeuralNetwork;
 
@@ -41,15 +42,16 @@ public class TournamentEnvironmentFitness implements Fitness<OptimizableNeuralNe
 			int x = random.nextInt(width);
 			int y = random.nextInt(height);
 			double direction = 2 * Math.PI * random.nextDouble();
+			double speed = 0;
 
-			NeuralNetworkDrivenAgent agent = new NeuralNetworkDrivenAgent(x, y, direction);
+			NeuralNetworkDrivenAgent agent = new NeuralNetworkDrivenAgent(x, y, direction, speed);
 			agent.setBrain(chromosome.clone());
 
 			env.addAgent(agent);
 		}
 
 		for (int i = 0; i < foodCount; i++) {
-			Food food = this.newPieceOfFood(width, height);
+			IFood food = this.newPieceOfFood(width, height);
 			env.addAgent(food);
 		}
 
@@ -64,8 +66,8 @@ public class TournamentEnvironmentFitness implements Fitness<OptimizableNeuralNe
 		return 1.0 / score;
 	}
 
-	protected Food newPieceOfFood(int width, int height) {
-		Food food = new Food(random.nextInt(width), random.nextInt(height));
+	protected IFood newPieceOfFood(int width, int height) {
+		IFood food = new StaticFood(random.nextInt(width), random.nextInt(height));
 		return food;
 	}
 }

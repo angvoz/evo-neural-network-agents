@@ -35,7 +35,7 @@ public class AgentsEnvironment {
 
 	private Random random = new Random();
 
-	private List<AbstractAgent> agents = new ArrayList<AbstractAgent>();
+	private List<IAgent> agents = new ArrayList<IAgent>();
 
 	private List<AgentsEnvironmentObserver> listeners = new ArrayList<AgentsEnvironmentObserver>();
 
@@ -62,30 +62,34 @@ public class AgentsEnvironment {
 		return this.time;
 	}
 
-	public List<Agent> getFishes() {
-		List<Agent> fishes = new ArrayList<Agent>();
-		for (Agent agent : filter(Agent.class)) {
-			fishes.add(agent);
+	public List<FertileAgent> getFishes() {
+		List<FertileAgent> filtered = new LinkedList<FertileAgent>();
+		for (IAgent agent : this.agents) {
+			if (agent instanceof FertileAgent) {
+				filtered.add((FertileAgent) agent);
+			}
 		}
-		return fishes;
+		return filtered;
 	}
 
-	public List<Food> getFood() {
-		List<Food> foods = new ArrayList<Food>();
-		for (Food food : filter(Food.class)) {
-			foods.add(food);
+	public List<IFood> getFood() {
+		List<IFood> filtered = new LinkedList<IFood>();
+		for (IAgent agent : this.agents) {
+			if (agent instanceof IFood) {
+				filtered.add((IFood) agent);
+			}
 		}
-		return foods;
+		return filtered;
 	}
 
-	private Food createRandomFood(int width, int height) {
+	private IFood createRandomFood(int width, int height) {
 		boolean staticFood = false;
 		int x = random.nextInt(width);
 		int y = random.nextInt(height);
 
-		Food food = null;
+		IFood food = null;
 		if (staticFood) {
-			food = new Food(x, y);
+			food = new StaticFood(x, y);
 		} else {
 			double speed = random.nextDouble() * 2;
 			double direction = random.nextDouble() * 2 * Math.PI;
@@ -95,21 +99,21 @@ public class AgentsEnvironment {
 		return food;
 	}
 
-	private Food reproduceFood(Food food) {
+	private IFood reproduceFood(IFood food) {
 		double x = food.getX();
 		double y = food.getY();
 
 		double speed = random.nextDouble() * 2;
 		double direction = random.nextDouble() * 2 * Math.PI;
-		Food newFood = new MovingFood(x, y, direction, speed);
+		IFood newFood = new MovingFood(x, y, direction, speed);
 
 		return newFood;
 	}
 
 	private void feedAgents() {
 		countEatenFood = 0;
-		for (Food food : getFood()) {
-			for (Agent fish : getFishes()) {
+		for (IFood food : getFood()) {
+			for (FertileAgent fish : getFishes()) {
 				double fishRadius = fish.getRadius();
 				double deltaY = Math.abs(food.getY() - fish.getY());
 				if (deltaY < fishRadius) {
@@ -119,9 +123,9 @@ public class AgentsEnvironment {
 						if (distanceToFood < fishRadius) {
 							countEatenFood++;
 							removeAgent(food);
-							fish.eatFood(food);
+							fish.feed(food);
 							if (fish.isPregnant()) {
-								Agent newFish = fish.reproduce();
+								FertileAgent newFish = fish.reproduce();
 								addAgent(newFish);
 							}
 							break;
@@ -134,7 +138,7 @@ public class AgentsEnvironment {
 
 	public synchronized void timeStep() {
 		// Move agents
-		for (AbstractAgent agent : this.getAgents()) {
+		for (IAgent agent : this.getAgents()) {
 			agent.interact(this);
 			this.avoidMovingOutsideOfBounds(agent);
 		}
@@ -143,7 +147,8 @@ public class AgentsEnvironment {
 		this.feedAgents();
 		growAgentsOlder();
 		if (getFishes().size() <= ENDANGERED_SPECIES) {
-			addNewRandomAgent();
+			// Do not allow life go extinct in this simulation
+			addNewRandomFish();
 		}
 		if (getFishes().size() > ENDANGERED_SPECIES) {
 			addNewFood();
@@ -160,27 +165,27 @@ public class AgentsEnvironment {
 	private void addNewFood() {
 		while (energyReserve > 0) {
 			int foodEnergy = 1;
-			List<Food> allFood = this.getFood();
+			List<IFood> allFood = this.getFood();
 			if (FOOD_CELL_DIVISION && allFood.size() > 0) {
 				int index = random.nextInt(allFood.size());
-				Food food = reproduceFood(allFood.get(index));
+				IFood food = reproduceFood(allFood.get(index));
 				this.addAgent(food);
 			} else {
-				Food food = createRandomFood(this.getWidth(), this.getHeight());
+				IFood food = createRandomFood(this.getWidth(), this.getHeight());
 				this.addAgent(food);
 			}
 			energyReserve -= foodEnergy;
 		}
 	}
 
-	private void addNewRandomAgent() {
-		// Do not allow life go extinct in this simulation
-		if (energyReserve >= Agent.STARTING_ENERGY) {
+	private void addNewRandomFish() {
+		if (energyReserve >= FertileAgent.STARTING_ENERGY) {
 			// Add new random agent
 			int x = random.nextInt(this.getWidth());
 			int y = random.nextInt(this.getHeight());
 			double direction = random.nextDouble() * 2 * Math.PI;
-			NeuralNetworkDrivenAgent newAgent = new NeuralNetworkDrivenAgent(x, y, direction);
+			double speed = random.nextDouble() * NeuralNetworkDrivenAgent.maxSpeed;
+			NeuralNetworkDrivenAgent newAgent = new NeuralNetworkDrivenAgent(x, y, direction, speed);
 			OptimizableNeuralNetwork newBrain = NeuralNetworkDrivenAgent.randomNeuralNetworkBrain().mutate();
 			newAgent.setBrain(newBrain);
 			this.addAgent(newAgent);
@@ -189,7 +194,7 @@ public class AgentsEnvironment {
 	}
 
 	private void growAgentsOlder() {
-		for (Agent agent : getFishes()) {
+		for (FertileAgent agent : getFishes()) {
 			int upkeepEnergy = agent.growOlder();
 			if (agent.getEnergy() <= 0) {
 				this.removeAgent(agent);
@@ -201,7 +206,7 @@ public class AgentsEnvironment {
 	/**
 	 * avoid moving outside of environment
 	 */
-	private void avoidMovingOutsideOfBounds(AbstractAgent agent) {
+	private void avoidMovingOutsideOfBounds(IAgent agent) {
 		double newX = agent.getX();
 		double newY = agent.getY();
 		if (newX < 0) {
@@ -221,35 +226,22 @@ public class AgentsEnvironment {
 		agent.setY(newY);
 	}
 
-	public List<AbstractAgent> getAgents() {
+	public List<IAgent> getAgents() {
 		// to avoid concurrent modification exception
-		return new LinkedList<AbstractAgent>(this.agents);
+		return new LinkedList<IAgent>(this.agents);
 	}
 
-	public synchronized void addAgent(AbstractAgent agent) {
+	public synchronized void addAgent(IAgent agent) {
 		this.agents.add(agent);
 	}
 
-	public synchronized void removeAgent(AbstractAgent agent) {
+	public synchronized void removeAgent(IAgent agent) {
 		this.agents.remove(agent);
-	}
-
-	@SuppressWarnings("unchecked")
-	public <T extends AbstractAgent> Iterable<T> filter(Class<T> clazz) {
-		// Guava increases binary size from 70Kb to 2Mb :(
-		// return Iterables.filter(this.getAgents(), clazz);
-		List<T> filtered = new LinkedList<T>();
-		for (AbstractAgent agent : this.getAgents()) {
-			if (clazz.isInstance(agent)) {
-				filtered.add((T) agent);
-			}
-		}
-		return filtered;
 	}
 
 	public int getLongestGeneration() {
 		int maxGeneration = -1;
-		for (AbstractAgent agent : this.getAgents()) {
+		for (FertileAgent agent : this.getFishes()) {
 			if (agent instanceof NeuralNetworkDrivenAgent) {
 				maxGeneration = Math.max(((NeuralNetworkDrivenAgent) agent).getGeneration(), maxGeneration);
 			}

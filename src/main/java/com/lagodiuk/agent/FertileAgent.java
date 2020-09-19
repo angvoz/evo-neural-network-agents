@@ -15,21 +15,45 @@
  ******************************************************************************/
 package com.lagodiuk.agent;
 
-public class MovingFood extends MovingAgent implements IFood {
-	private static double RADIUS = 2;
-	private static int ENERGY = 1;
+abstract public class FertileAgent extends MovingAgent {
+	public static final int STARTING_ENERGY = 6;
+	protected static final int PREGNANCY_ENERGY = 10;
 
-	public MovingFood(double x, double y, double angle, double speed) {
+	private double age;
+	private int energy;
+
+	public FertileAgent(double x, double y, double angle, double speed) {
 		super(x, y, angle, speed);
-	}
 
-	@Override
-	public double getRadius() {
-		return RADIUS;
+		this.age = 0;
+		this.energy = STARTING_ENERGY;
 	}
 
 	@Override
 	public int getEnergy() {
-		return ENERGY;
+		return energy;
 	}
+
+	public void setEnergy(int energy) {
+		this.energy = energy;
+	}
+
+	public int growOlder() {
+		int oldEnergy = energy;
+		this.age++;
+		if (age % 100 == 0) {
+			this.energy = energy - 1;
+		}
+		return oldEnergy - energy;
+	}
+
+	public void feed(IFood food) {
+		this.energy += food.getEnergy();
+	}
+
+	public boolean isPregnant() {
+		return energy >= PREGNANCY_ENERGY;
+	}
+
+	abstract public FertileAgent reproduce();
 }

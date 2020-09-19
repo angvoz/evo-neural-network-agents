@@ -15,38 +15,51 @@
  ******************************************************************************/
 package com.lagodiuk.agent;
 
-abstract public class AbstractAgent implements IAgent {
-	private double x;
-	private double y;
+public abstract class MovingAgent extends AbstractAgent {
+	private double angle;
+	private double speed;
 
-	protected int energy;
-
-	public AbstractAgent(double x, double y) {
-		this.x = x;
-		this.y = y;
+	public MovingAgent(double x, double y, double angle, double speed) {
+		super(x, y);
+		this.speed = speed;
+		this.angle = angle;
 	}
 
-	@Override
-	public double getX() {
-		return this.x;
+	public double getAngle() {
+		return this.angle;
 	}
 
-	@Override
-	public double getY() {
-		return this.y;
+	public void setAngle(double angle) {
+		this.angle = angle;
 	}
 
-	@Override
-	public void setX(double x) {
-		this.x = x;
+	public double getSpeed() {
+		return this.speed;
 	}
 
-	@Override
-	public void setY(double y) {
-		this.y = y;
+	public void setSpeed(double v) {
+		this.speed = v;
+	}
+
+	public double getRx() {
+		double rx = -Math.sin(this.angle);
+		return rx;
+	}
+
+	public double getRy() {
+		double ry = Math.cos(this.angle);
+		return ry;
 	}
 
 	@Override
 	public void interact(AgentsEnvironment env) {
+		this.move();
+	}
+
+	public void move() {
+		double rx = -Math.sin(this.angle);
+		double ry = Math.cos(this.angle);
+		this.setX(this.getX() + (rx * this.speed));
+		this.setY(this.getY() + (ry * this.speed));
 	}
 }
