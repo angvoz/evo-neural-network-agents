@@ -218,7 +218,7 @@ public class Main {
 	}
 
 	private static void initializeUI(int environmentWidth, int environmentHeight) {
-		appFrame = new JFrame("Evolving neural network driven agnets");
+		appFrame = new JFrame("Evolving neural network driven agents");
 		appFrame.setSize(environmentWidth + 130, environmentHeight + 50);
 		appFrame.setResizable(false);
 		appFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
