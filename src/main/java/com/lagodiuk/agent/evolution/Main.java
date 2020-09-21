@@ -371,7 +371,7 @@ public class Main {
 
 						FileInputStream in = new FileInputStream(brainFile);
 
-						NeuralNetwork newBrain = NeuralNetwork.unmarsall(in);
+						NeuralNetwork newBrain = NeuralNetwork.unmarshall(in);
 						in.close();
 
 						setAgentBrains(newBrain, 0);
@@ -411,7 +411,7 @@ public class Main {
 						// current brain is the best evolved neural network
 						// from genetic algorithm
 						NeuralNetwork brain = ga.getBest();
-						NeuralNetwork.marsall(brain, out);
+						NeuralNetwork.marshall(brain, out);
 
 						out.close();
 					} catch (Exception e) {

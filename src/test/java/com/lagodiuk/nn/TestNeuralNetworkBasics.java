@@ -178,17 +178,17 @@ public class TestNeuralNetworkBasics {
 
 			// serialize nn1 to xml
 			ByteArrayOutputStream out1 = new ByteArrayOutputStream();
-			NeuralNetwork.marsall(nn1, out1);
+			NeuralNetwork.marshall(nn1, out1);
 			out1.flush();
 			byte[] data1 = out1.toByteArray();
 
 			// deserialize nn2 from that xml
 			ByteArrayInputStream in = new ByteArrayInputStream(data1);
-			NeuralNetwork nn2 = NeuralNetwork.unmarsall(in);
+			NeuralNetwork nn2 = NeuralNetwork.unmarshall(in);
 
 			// serialize nn2 to xml
 			ByteArrayOutputStream out2 = new ByteArrayOutputStream();
-			NeuralNetwork.marsall(nn1, out2);
+			NeuralNetwork.marshall(nn1, out2);
 			out2.flush();
 			byte[] data2 = out2.toByteArray();
 
