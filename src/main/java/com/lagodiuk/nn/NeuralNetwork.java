@@ -158,7 +158,7 @@ public class NeuralNetwork implements Cloneable {
 		return "NeuralNetwork [neurons=" + this.neurons + ", links=" + this.neuronsLinks + ", activationIterations=" + this.activationIterations + "]";
 	}
 
-	public static void marsall(NeuralNetwork nn, OutputStream out) throws Exception {
+	public static void marshall(NeuralNetwork nn, OutputStream out) throws Exception {
 		// TODO refactoring
 		JAXBContext context = JAXBContext.newInstance(NeuralNetwork.class);
 		Marshaller marshaller = context.createMarshaller();
@@ -167,7 +167,7 @@ public class NeuralNetwork implements Cloneable {
 		out.flush();
 	}
 
-	public static NeuralNetwork unmarsall(InputStream in) throws Exception {
+	public static NeuralNetwork unmarshall(InputStream in) throws Exception {
 		// TODO refactoring
 		JAXBContext context = JAXBContext.newInstance(NeuralNetwork.class);
 		Unmarshaller unmarshaller = context.createUnmarshaller();
