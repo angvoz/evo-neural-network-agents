@@ -23,6 +23,7 @@ import com.lagodiuk.agent.AgentsEnvironment;
 import com.lagodiuk.agent.FertileAgent;
 import com.lagodiuk.agent.IAgent;
 import com.lagodiuk.agent.IFood;
+import com.lagodiuk.agent.MovingFood;
 import com.lagodiuk.nn.NeuralNetwork;
 import com.lagodiuk.nn.ThresholdFunction;
 import com.lagodiuk.nn.genetic.OptimizableNeuralNetwork;
@@ -31,11 +32,9 @@ public class NeuralNetworkDrivenAgent extends FertileAgent {
 	private static final double RADIUS = 5;
 	public static final double MAX_SPEED = 4;
 	private static final double MAX_DELTA_ANGLE = 1;
-	protected static final double MAX_AGENTS_DISTANCE = 5;
-	private static final double AGENT = -10;
-	private static final double EMPTY = 0;
-	private static final double FOOD = 10;
+	protected static final double MAX_AGENTS_DISTANCE = 150;
 	private static final double MUTATE_FACTOR = 10;
+	private static final int NUMBER_OF_NEURONS = 15;
 
 	private volatile NeuralNetwork brain;
 
@@ -106,18 +105,23 @@ public class NeuralNetworkDrivenAgent extends FertileAgent {
 		this.brain.activate();
 	}
 
+	@SuppressWarnings("unused")
 	protected List<Double> createNnInputs(AgentsEnvironment environment) {
 		// Find nearest food
-		IFood nearestFood = null;
-		double nearestFoodDist = Double.MAX_VALUE;
+		IFood nearestFood_1 = null;
+		double nearestFoodDist_1 = Double.MAX_VALUE;
+		IFood nearestFood_2 = null;
+		double nearestFoodDist_2 = Double.MAX_VALUE;
 
 		for (IFood currFood : environment.getFood()) {
 			// agent can see only ahead
 			if (this.inSight(currFood)) {
 				double currFoodDist = this.distanceTo(currFood);
-				if ((nearestFood == null) || (currFoodDist <= nearestFoodDist)) {
-					nearestFood = currFood;
-					nearestFoodDist = currFoodDist;
+				if ((nearestFood_1 == null) || (currFoodDist <= nearestFoodDist_1)) {
+					nearestFood_2 = nearestFood_1;
+					nearestFoodDist_2 = nearestFoodDist_1;
+					nearestFood_1 = currFood;
+					nearestFoodDist_1 = currFoodDist;
 				}
 			}
 		}
@@ -145,47 +149,93 @@ public class NeuralNetworkDrivenAgent extends FertileAgent {
 		double x = this.getX();
 		double y = this.getY();
 
-		if (nearestFood != null) {
-			double foodDirectionVectorX = nearestFood.getX() - x;
-			double foodDirectionVectorY = nearestFood.getY() - y;
+		nnInputs.add((double) getEnergy());
+
+		double foodDirectionCosTeta_1 = 0;
+		double nearestFoodSpeed_1 = 0;
+		double nearestFoodAngleDiff_1 = 0;
+		if (nearestFood_1 != null) {
+			double foodDirectionVectorX = nearestFood_1.getX() - x;
+			double foodDirectionVectorY = nearestFood_1.getY() - y;
 
 			// left/right cos
-			double foodDirectionCosTeta =
+			foodDirectionCosTeta_1 =
 					Math.signum(this.pseudoScalarProduct(rx, ry, foodDirectionVectorX, foodDirectionVectorY))
-							* this.cosTeta(rx, ry, foodDirectionVectorX, foodDirectionVectorY);
+					* this.cosTeta(rx, ry, foodDirectionVectorX, foodDirectionVectorY);
 
-			nnInputs.add(FOOD);
-			nnInputs.add(nearestFoodDist);
-			nnInputs.add(foodDirectionCosTeta);
-
-		} else {
-			nnInputs.add(EMPTY);
-			nnInputs.add(0.0);
-			nnInputs.add(0.0);
+			if (nearestFood_1 instanceof MovingFood) {
+				nearestFoodSpeed_1 = ((MovingFood) nearestFood_1).getSpeed();
+				double nearestFoodAngle = ((MovingFood) nearestFood_1).getAngle();
+				nearestFoodAngleDiff_1 = this.getAngle() - nearestFoodAngle;
+			}
 		}
 
-		if (nearestAgent != null) {
-			double agentDirectionVectorX = nearestAgent.getX() - x;
-			double agentDirectionVectorY = nearestAgent.getY() - y;
+		nnInputs.add(nearestFoodDist_1);
+		nnInputs.add(foodDirectionCosTeta_1);
+		nnInputs.add(nearestFoodAngleDiff_1);
+		nnInputs.add(nearestFoodSpeed_1);
+
+		double foodDirectionCosTeta_2 = 0;
+		double nearestFoodSpeed_2 = 0;
+		double nearestFoodAngleDiff_2 = 0;
+		if (nearestFood_2 != null) {
+			double foodDirectionVectorX = nearestFood_2.getX() - x;
+			double foodDirectionVectorY = nearestFood_2.getY() - y;
 
 			// left/right cos
-			double agentDirectionCosTeta =
-					Math.signum(this.pseudoScalarProduct(rx, ry, agentDirectionVectorX, agentDirectionVectorY))
-							* this.cosTeta(rx, ry, agentDirectionVectorX, agentDirectionVectorY);
+			foodDirectionCosTeta_2 =
+					Math.signum(this.pseudoScalarProduct(rx, ry, foodDirectionVectorX, foodDirectionVectorY))
+					* this.cosTeta(rx, ry, foodDirectionVectorX, foodDirectionVectorY);
 
-			nnInputs.add(AGENT);
-			nnInputs.add(nearestAgentDist);
-			nnInputs.add(agentDirectionCosTeta);
-
-		} else {
-			nnInputs.add(EMPTY);
-			nnInputs.add(0.0);
-			nnInputs.add(0.0);
+			if (nearestFood_2 instanceof MovingFood) {
+				nearestFoodSpeed_2 = ((MovingFood) nearestFood_2).getSpeed();
+				double nearestFoodAngle = ((MovingFood) nearestFood_2).getAngle();
+				nearestFoodAngleDiff_2 = this.getAngle() - nearestFoodAngle;
+			}
 		}
+
+		nnInputs.add(nearestFoodDist_2);
+		nnInputs.add(foodDirectionCosTeta_2);
+		nnInputs.add(nearestFoodAngleDiff_2);
+		nnInputs.add(nearestFoodSpeed_2);
+
+//		if (nearestAgent != null) {
+//			double agentDirectionVectorX = nearestAgent.getX() - x;
+//			double agentDirectionVectorY = nearestAgent.getY() - y;
+//
+//			// left/right cos
+//			double agentDirectionCosTeta =
+//					Math.signum(this.pseudoScalarProduct(rx, ry, agentDirectionVectorX, agentDirectionVectorY))
+//							* this.cosTeta(rx, ry, agentDirectionVectorX, agentDirectionVectorY);
+//
+//			double nearestAgentSpeed = 0;
+//			double nearestAgentAngleDiff = 0;
+//			if (nearestAgent instanceof NeuralNetworkDrivenAgent) {
+//				nearestAgentSpeed = ((NeuralNetworkDrivenAgent) nearestAgent).getSpeed();
+//				double nearestAgentAngle = ((NeuralNetworkDrivenAgent) nearestAgent).getAngle();
+//				nearestAgentAngleDiff = this.getAngle() - nearestAgentAngle;
+//			}
+//
+////			nnInputs.add(AGENT);
+//			nnInputs.add(nearestAgentDist);
+//			nnInputs.add(agentDirectionCosTeta);
+//			nnInputs.add(nearestAgentSpeed);
+//			nnInputs.add(nearestAgentAngleDiff);
+//
+//		} else {
+////			nnInputs.add(EMPTY);
+//			nnInputs.add(0.0);
+//			nnInputs.add(0.0);
+//			nnInputs.add(0.0);
+//			nnInputs.add(0.0);
+//		}
 		return nnInputs;
 	}
 
 	protected boolean inSight(IAgent agent) {
+		if (distanceTo(agent) > MAX_AGENTS_DISTANCE) {
+			return false;
+		}
 		double crossProduct = this.cosTeta(this.getRx(), this.getRy(), agent.getX() - this.getX(), agent.getY() - this.getY());
 		return (crossProduct > 0);
 	}
@@ -234,23 +284,24 @@ public class NeuralNetworkDrivenAgent extends FertileAgent {
 	}
 
 	public static OptimizableNeuralNetwork randomNeuralNetworkBrain() {
-		OptimizableNeuralNetwork nn = new OptimizableNeuralNetwork(15);
-		for (int i = 0; i < 15; i++) {
+		final int MIDDLE_POINT = 6;
+		OptimizableNeuralNetwork nn = new OptimizableNeuralNetwork(NUMBER_OF_NEURONS);
+		for (int i = 0; i < NUMBER_OF_NEURONS; i++) {
 			ThresholdFunction f = ThresholdFunction.getRandomFunction();
-			nn.setNeuronFunction(i, f, f.getDefaultParams());
+			nn.setNeuronFunction(i, f, f.getRandomParams());
 		}
-		for (int i = 0; i < 6; i++) {
-			nn.setNeuronFunction(i, ThresholdFunction.LINEAR, ThresholdFunction.LINEAR.getDefaultParams());
-		}
-		for (int i = 0; i < 6; i++) {
-			for (int j = 6; j < 15; j++) {
-				nn.addLink(i, j, Math.random());
+//		for (int i = 0; i < MIDDLE_POINT; i++) {
+//			nn.setNeuronFunction(i, ThresholdFunction.LINEAR, ThresholdFunction.LINEAR.getDefaultParams());
+//		}
+		for (int i = 0; i < MIDDLE_POINT; i++) {
+			for (int j = MIDDLE_POINT; j < NUMBER_OF_NEURONS; j++) {
+				nn.addLink(i, j, Math.random() - 0.5);
 			}
 		}
-		for (int i = 6; i < 15; i++) {
-			for (int j = 6; j < 15; j++) {
+		for (int i = MIDDLE_POINT; i < NUMBER_OF_NEURONS; i++) {
+			for (int j = MIDDLE_POINT; j < NUMBER_OF_NEURONS; j++) {
 				if (i < j) {
-					nn.addLink(i, j, Math.random());
+					nn.addLink(i, j, Math.random() - 0.5);
 				}
 			}
 		}
