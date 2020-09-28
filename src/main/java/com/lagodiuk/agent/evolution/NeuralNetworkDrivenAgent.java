@@ -33,7 +33,7 @@ public class NeuralNetworkDrivenAgent extends FertileAgent {
 	public static final double MAX_SPEED = 4;
 	private static final double MAX_DELTA_ANGLE = 1;
 	protected static final double MAX_AGENTS_DISTANCE = 150;
-	private static final double MUTATE_FACTOR = 10;
+	private static final double MUTATE_FACTOR = 1000;
 	private static final int NUMBER_OF_NEURONS = 15;
 
 	private volatile NeuralNetwork brain;
@@ -73,6 +73,8 @@ public class NeuralNetworkDrivenAgent extends FertileAgent {
 	 */
 	@Override
 	public synchronized void interact(AgentsEnvironment env) {
+		mutate();
+
 		List<Double> nnInputs = this.createNnInputs(env);
 
 		this.activateNeuralNetwork(nnInputs);
@@ -344,6 +346,21 @@ public class NeuralNetworkDrivenAgent extends FertileAgent {
 		super.move(env);
 	}
 
+	private void mutate() {
+		Random random = new Random();
+		if (this.brain instanceof OptimizableNeuralNetwork && random.nextInt() % MUTATE_FACTOR == 0) {
+			generation++;
+			countMutation++;
+			OptimizableNeuralNetwork newBrain = ((OptimizableNeuralNetwork) this.brain).mutate();
+			if (random.nextInt() % MUTATE_FACTOR == 0) {
+				// double mutation
+				countMutation++;
+				newBrain = newBrain.mutate();
+			}
+			setBrain(newBrain);
+		}
+	}
+
 	@Override
 	public void reproduce(AgentsEnvironment env) {
 		if (getEnergy() >= PREGNANCY_ENERGY) {
@@ -352,20 +369,7 @@ public class NeuralNetworkDrivenAgent extends FertileAgent {
 			double newSpeed = 0;
 			NeuralNetworkDrivenAgent newAgent = new NeuralNetworkDrivenAgent(this.getX(), this.getY(), newAngle, newSpeed);
 			newAgent.generation = this.generation;
-			NeuralNetwork newBrain;
-			if (this.brain instanceof OptimizableNeuralNetwork && random.nextInt() % MUTATE_FACTOR == 0) {
-				countMutation++;
-				newBrain = ((OptimizableNeuralNetwork) this.brain).mutate();
-				if (random.nextInt() % MUTATE_FACTOR == 0) {
-					// double mutation
-					countMutation++;
-					newBrain = ((OptimizableNeuralNetwork) newBrain).mutate();
-				}
-				newAgent.generation++;
-			} else {
-				newBrain = this.brain;
-			}
-			newAgent.setBrain(newBrain);
+			newAgent.setBrain(this.brain.clone());
 			setEnergy(getEnergy() - newAgent.getEnergy());
 			env.addAgent(newAgent);
 		}
