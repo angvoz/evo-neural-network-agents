@@ -15,12 +15,15 @@
  ******************************************************************************/
 package com.lagodiuk.agent;
 
+import java.util.Random;
+
 public class StaticFood extends AbstractAgent implements IFood {
 	private static double RADIUS = 2;
 	private static int ENERGY = 1;
 
 	public StaticFood(double x, double y) {
 		super(x, y);
+		energy = ENERGY;
 	}
 
 	@Override
@@ -30,6 +33,15 @@ public class StaticFood extends AbstractAgent implements IFood {
 
 	@Override
 	public int getEnergy() {
-		return ENERGY;
+		return energy;
+	}
+
+	@Override
+	public void reproduce(AgentsEnvironment env) {
+		Random random = new Random();
+		int x = random.nextInt(env.getWidth());
+		int y = random.nextInt(env.getHeight());
+		IFood newFood = new StaticFood(x, y);
+		env.addAgent(newFood);
 	}
 }

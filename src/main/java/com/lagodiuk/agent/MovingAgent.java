@@ -51,15 +51,30 @@ public abstract class MovingAgent extends AbstractAgent {
 		return ry;
 	}
 
-	@Override
-	public void interact(AgentsEnvironment env) {
-		this.move();
-	}
-
-	public void move() {
+	public void move(AgentsEnvironment env) {
 		double rx = -Math.sin(this.angle);
 		double ry = Math.cos(this.angle);
 		this.setX(this.getX() + (rx * this.speed));
 		this.setY(this.getY() + (ry * this.speed));
+
+
+		double newX = this.getX();
+		double newY = this.getY();
+		if (newX < 0) {
+			newX = env.getWidth() - 1;
+		}
+		if (newY < 0) {
+			newY = env.getHeight() - 1;
+		}
+		if (newX > env.getWidth()) {
+			newX = 1;
+		}
+		if (newY > env.getHeight()) {
+			newY = 1;
+		}
+
+		this.setX(newX);
+		this.setY(newY);
+
 	}
 }

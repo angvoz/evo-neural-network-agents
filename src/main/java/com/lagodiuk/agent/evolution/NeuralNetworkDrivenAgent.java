@@ -29,26 +29,18 @@ import com.lagodiuk.nn.genetic.OptimizableNeuralNetwork;
 
 public class NeuralNetworkDrivenAgent extends FertileAgent {
 	private static final double RADIUS = 5;
-
-	public static final double maxSpeed = 4;
-
-	private static final double maxDeltaAngle = 1;
-
-	protected static final double maxAgentsDistance = 5;
-
+	public static final double MAX_SPEED = 4;
+	private static final double MAX_DELTA_ANGLE = 1;
+	protected static final double MAX_AGENTS_DISTANCE = 5;
 	private static final double AGENT = -10;
-
 	private static final double EMPTY = 0;
-
 	private static final double FOOD = 10;
-
 	private static final double MUTATE_FACTOR = 10;
 
 	private volatile NeuralNetwork brain;
 
 	private static volatile long countMutation = 0;
-
-	private int generation;
+	private int generation = 0;
 
 	public NeuralNetworkDrivenAgent(double x, double y, double angle, double speed) {
 		super(x, y, angle, speed);
@@ -98,38 +90,6 @@ public class NeuralNetworkDrivenAgent extends FertileAgent {
 
 		this.setAngle(newAngle);
 		this.setSpeed(newSpeed);
-
-		for (FertileAgent otherAgent : env.getFishes()) {
-			if (this != otherAgent) {
-				double futureDistance = this.module(otherAgent.getX() - (this.getX() + this.getRx() * this.getSpeed()),
-						otherAgent.getY() - (this.getY() + this.getRy() * this.getSpeed()));
-				if (futureDistance < this.getRadius() * 2 + 3) {
-					// Check if the agent moves towards the other one (angle less than 90 degree)
-					double ux = otherAgent.getX() - this.getX();
-					double uy = otherAgent.getY() - this.getY();
-					double vx = this.getRx();
-					double vy = this.getRy();
-					double d = ux*vx + uy*vy;
-					if (d > 0) {
-						// if less than 90 degree move the agent in opposite direction
-						newAngle = Math.atan2(uy, ux) + Math.PI/2;
-						this.setAngle(newAngle);
-						// if the other agent not moving move it
-						if (otherAgent.getSpeed() == 0) {
-							otherAgent.setAngle(newAngle + Math.PI);
-							otherAgent.setSpeed(maxSpeed);
-							otherAgent.move();
-						}
-						if (this.getSpeed() == 0) {
-							this.setSpeed(maxSpeed);
-						}
-						break;
-					}
-				}
-			}
-		}
-
-		this.move();
 	}
 
 	private double avoidNaNAndInfinity(double x) {
@@ -164,7 +124,7 @@ public class NeuralNetworkDrivenAgent extends FertileAgent {
 
 		// Find nearest agent
 		FertileAgent nearestAgent = null;
-		double nearestAgentDist = maxAgentsDistance;
+		double nearestAgentDist = MAX_AGENTS_DISTANCE;
 
 		for (FertileAgent currAgent : environment.getFishes()) {
 			// agent can see only ahead
@@ -256,8 +216,8 @@ public class NeuralNetworkDrivenAgent extends FertileAgent {
 	}
 
 	private double normalizeSpeed(double speed) {
-		if (speed > maxSpeed) {
-			speed = maxSpeed;
+		if (speed > MAX_SPEED) {
+			speed = MAX_SPEED;
 		} else if (speed < 0) {
 			speed = 0;
 		}
@@ -266,9 +226,9 @@ public class NeuralNetworkDrivenAgent extends FertileAgent {
 
 	private double normalizeDeltaAngle(double angle) {
 		double abs = Math.abs(angle);
-		if (abs > maxDeltaAngle) {
+		if (abs > MAX_DELTA_ANGLE) {
 			double sign = Math.signum(angle);
-			angle = sign * maxDeltaAngle;
+			angle = sign * MAX_DELTA_ANGLE;
 		}
 		return angle;
 	}
@@ -298,7 +258,43 @@ public class NeuralNetworkDrivenAgent extends FertileAgent {
 	}
 
 	@Override
-	public NeuralNetworkDrivenAgent reproduce() {
+	public void move(AgentsEnvironment env) {
+		double newAngle = getAngle();
+		for (FertileAgent otherAgent : env.getFishes()) {
+			if (this != otherAgent) {
+				double futureDistance = this.module(otherAgent.getX() - (this.getX() + this.getRx() * this.getSpeed()),
+						otherAgent.getY() - (this.getY() + this.getRy() * this.getSpeed()));
+				if (futureDistance < this.getRadius() * 2 + 3) {
+					// Check if the agent moves towards the other one (angle less than 90 degree)
+					double ux = otherAgent.getX() - this.getX();
+					double uy = otherAgent.getY() - this.getY();
+					double vx = this.getRx();
+					double vy = this.getRy();
+					double d = ux*vx + uy*vy;
+					if (d > 0) {
+						// if less than 90 degree move the agent in opposite direction
+						newAngle = Math.atan2(uy, ux) + Math.PI/2;
+						this.setAngle(newAngle);
+						// if the other agent not moving move it
+						if (otherAgent.getSpeed() == 0) {
+							otherAgent.setAngle(newAngle + Math.PI);
+							otherAgent.setSpeed(MAX_SPEED);
+							otherAgent.move(env);
+						}
+						if (this.getSpeed() == 0) {
+							this.setSpeed(MAX_SPEED);
+						}
+						break;
+					}
+				}
+			}
+		}
+
+		super.move(env);
+	}
+
+	@Override
+	public void reproduce(AgentsEnvironment env) {
 		if (getEnergy() >= PREGNANCY_ENERGY) {
 			Random random = new Random();
 			double newAngle = random.nextDouble();
@@ -320,9 +316,8 @@ public class NeuralNetworkDrivenAgent extends FertileAgent {
 			}
 			newAgent.setBrain(newBrain);
 			setEnergy(getEnergy() - newAgent.getEnergy());
-			return newAgent;
+			env.addAgent(newAgent);
 		}
-		return null;
 	}
 
 	public int getGeneration() {

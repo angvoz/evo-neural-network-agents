@@ -571,8 +571,8 @@ public class Main {
 		for (int i = 0; i < agentsCount; i++) {
 			int x = random.nextInt(environmentWidth);
 			int y = random.nextInt(environmentHeight);
-			double direction = random.nextDouble() * 2 * Math.PI;
-			double speed = random.nextDouble() * NeuralNetworkDrivenAgent.maxSpeed;
+			double direction = random.nextDouble() * 2*Math.PI;
+			double speed = random.nextDouble() * NeuralNetworkDrivenAgent.MAX_SPEED;
 
 			NeuralNetworkDrivenAgent agent = new NeuralNetworkDrivenAgent(x, y, direction, speed);
 			NeuralNetwork brain = NeuralNetworkDrivenAgent.randomNeuralNetworkBrain();
