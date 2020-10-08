@@ -29,12 +29,6 @@
 
 
 	<dependencies>
-		<dependency>
-			<groupId>com.lagodiuk</groupId>
-			<artifactId>ga</artifactId>
-			<version>1.0.2</version>
-		</dependency>
-
 		<!-- Guava increases binary size from 70Kb to 2Mb :( -->
 		<!-- <dependency>
 			<groupId>com.google.guava</groupId>

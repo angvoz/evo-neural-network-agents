@@ -24,7 +24,6 @@ import java.util.Set;
 
 import javax.xml.bind.annotation.XmlTransient;
 
-import com.lagodiuk.ga.Chromosome;
 import com.lagodiuk.nn.NeuralNetwork;
 import com.lagodiuk.nn.Neuron;
 import com.lagodiuk.nn.ThresholdFunction;
