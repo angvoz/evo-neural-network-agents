@@ -267,6 +267,17 @@ public class Main {
 		appFrame.setVisible(true);
 	}
 
+	private static JButton addNewButton(JPanel controlsPanel, String text, Dimension buttonSize, boolean enabled) {
+		JButton button = new JButton(text);
+		button.setPreferredSize(buttonSize);
+
+		JPanel panel = new JPanel();
+		panel.add(button);
+		controlsPanel.add(panel);
+
+		return button;
+	}
+
 	private static void initializeUI(int environmentWidth, int environmentHeight) {
 		appFrame = new JFrame("Evolving neural network driven agents");
 		appFrame.setSize(environmentWidth + 130, environmentHeight + 50);
@@ -279,18 +290,18 @@ public class Main {
 		environmentPanel.setSize(environmentWidth, environmentHeight);
 		appFrame.add(environmentPanel, BorderLayout.CENTER);
 
+		Dimension buttonSize = new Dimension(100, 40);
+		int hgap = 0;
+		int vgap = 5;
+		int envHeight = environment.getHeight();
+		int buttonRows = (int) (envHeight / (buttonSize.getHeight() + vgap + 5));
 		controlsPanel = new JPanel();
 		appFrame.add(controlsPanel, BorderLayout.EAST);
-		controlsPanel.setLayout(new GridLayout(11, 1, 5, 5));
+		controlsPanel.setLayout(new GridLayout(buttonRows, 1, hgap, vgap));
 
-		playPauseButton = new JButton(play ? "Pause" : "Start");
-		controlsPanel.add(playPauseButton);
-
-		saveButton = new JButton("Save");
-		controlsPanel.add(saveButton);
-
-		loadButton = new JButton("Load");
-		controlsPanel.add(loadButton);
+		playPauseButton = addNewButton(controlsPanel, play ? "Pause" : "Start", buttonSize, true);
+		saveButton = addNewButton(controlsPanel, "Save", buttonSize, !play);
+		loadButton = addNewButton(controlsPanel, "Load", buttonSize, !play);
 
 		evolveTextField = new JTextField("10");
 		controlsPanel.add(evolveTextField);
