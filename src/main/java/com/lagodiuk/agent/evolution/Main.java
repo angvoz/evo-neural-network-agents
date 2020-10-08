@@ -96,12 +96,6 @@ public class Main {
 
 	private static JButton resetButton;
 
-	private static JRadioButton staticFoodRadioButton;
-
-	private static JRadioButton dynamicFoodRadioButton;
-
-	private static ButtonGroup foodTypeButtonGroup;
-
 	private static JProgressBar progressBar;
 
 	private static JLabel statusBar;
@@ -145,8 +139,6 @@ public class Main {
 		initializeLoadFunctionality();
 
 		initializeSaveFunctionality();
-
-		initializeChangingFoodTypeFunctionality();
 
 		initializeResetButtonFunctionality();
 
@@ -300,19 +292,6 @@ public class Main {
 		saveButton = addNewButton(controlsPanel, "Save", buttonSize, !play);
 		loadButton = addNewButton(controlsPanel, "Load", buttonSize, !play);
 
-		staticFoodRadioButton = new JRadioButton("static food");
-		dynamicFoodRadioButton = new JRadioButton("dynamic food");
-		foodTypeButtonGroup = new ButtonGroup();
-		foodTypeButtonGroup.add(staticFoodRadioButton);
-		foodTypeButtonGroup.add(dynamicFoodRadioButton);
-		controlsPanel.add(staticFoodRadioButton);
-		controlsPanel.add(dynamicFoodRadioButton);
-		if (staticFood) {
-			staticFoodRadioButton.setSelected(true);
-		} else {
-			dynamicFoodRadioButton.setSelected(true);
-		}
-
 		resetButton = new JButton("reset");
 		controlsPanel.add(resetButton);
 
@@ -331,40 +310,6 @@ public class Main {
 		prefs = Preferences.userNodeForPackage(Main.class);
 		String saveDirPath = prefs.get(PREFS_KEY_SAVE_DIRECTORY, "");
 		fileChooser = new JFileChooser(new File(saveDirPath));
-	}
-
-	protected static void initializeChangingFoodTypeFunctionality() {
-		ItemListener changingFoodTypeListener = new ItemListener() {
-			@Override
-			public void itemStateChanged(ItemEvent e) {
-				if (e.getStateChange() == ItemEvent.SELECTED) {
-					disableControls();
-					boolean wasPlaying = play;
-					play = false;
-
-					staticFood = !staticFood;
-
-					List<IFood> foods = new LinkedList<IFood>();
-					for (IFood f : environment.getFood()) {
-						foods.add(f);
-					}
-					for (IFood f : foods) {
-						environment.removeFood(f);
-
-						IFood newFood = createRandomFood(1, 1);
-						newFood.setX(f.getX());
-						newFood.setY(f.getY());
-
-						environment.addFood(newFood);
-					}
-
-					play = wasPlaying;
-					enableControls();
-				}
-			}
-		};
-		staticFoodRadioButton.addItemListener(changingFoodTypeListener);
-		dynamicFoodRadioButton.addItemListener(changingFoodTypeListener);
 	}
 
 	private static void initializeLoadFunctionality() {
@@ -443,15 +388,11 @@ public class Main {
 	private static void disableControls() {
 		loadButton.setEnabled(false);
 		saveButton.setEnabled(false);
-		staticFoodRadioButton.setEnabled(false);
-		dynamicFoodRadioButton.setEnabled(false);
 	}
 
 	private static void enableControls() {
 		loadButton.setEnabled(!play);
 		saveButton.setEnabled(!play);
-		staticFoodRadioButton.setEnabled(true);
-		dynamicFoodRadioButton.setEnabled(true);
 	}
 
 	private static void initializeAddingFoodFunctionality() {
