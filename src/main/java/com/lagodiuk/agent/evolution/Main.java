@@ -88,10 +88,6 @@ public class Main {
 
 	private static JPanel controlsPanel;
 
-	private static JTextField evolveTextField;
-
-	private static JButton evolveButton;
-
 	private static JButton playPauseButton;
 
 	private static JButton loadButton;
@@ -141,8 +137,6 @@ public class Main {
 		initializeCanvas(environmentWidth, environmentHeight);
 
 		initializeUI(environmentWidth, environmentHeight);
-
-		initializeEvolveButtonFunctionality();
 
 		initializePlayPauseButtonFunctionality();
 
@@ -306,12 +300,6 @@ public class Main {
 		saveButton = addNewButton(controlsPanel, "Save", buttonSize, !play);
 		loadButton = addNewButton(controlsPanel, "Load", buttonSize, !play);
 
-		evolveTextField = new JTextField("10");
-		controlsPanel.add(evolveTextField);
-
-		evolveButton = new JButton("evolve");
-		controlsPanel.add(evolveButton);
-
 		staticFoodRadioButton = new JRadioButton("static food");
 		dynamicFoodRadioButton = new JRadioButton("dynamic food");
 		foodTypeButtonGroup = new ButtonGroup();
@@ -452,69 +440,7 @@ public class Main {
 		});
 	}
 
-	private static void initializeEvolveButtonFunctionality() {
-		evolveButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent arg0) {
-				disableControls();
-				progressBar.setVisible(true);
-				progressBar.setValue(0);
-				environmentPanel.getGraphics().drawImage(displayEnvironmentBufferedImage, 0, 0, null);
-
-				String iterCountStr = evolveTextField.getText();
-				if (!iterCountStr.matches("\\d+")) {
-					evolveButton.setEnabled(true);
-					evolveTextField.setEnabled(true);
-					progressBar.setVisible(false);
-					environmentPanel.getGraphics().drawImage(displayEnvironmentBufferedImage, 0, 0, null);
-					return;
-				}
-
-				final int iterCount = Integer.parseInt(iterCountStr);
-
-				new Thread(new Runnable() {
-					@Override
-					public void run() {
-						IterartionListener<OptimizableNeuralNetwork, Double> progressListener =
-								new IterartionListener<OptimizableNeuralNetwork, Double>() {
-									@Override
-									public void update(GeneticAlgorithm<OptimizableNeuralNetwork, Double> environment) {
-										final int iteration = environment.getIteration();
-										SwingUtilities.invokeLater(new Runnable() {
-											@Override
-											public void run() {
-												progressBar.setValue((iteration * 100) / iterCount);
-											}
-										});
-									}
-								};
-
-						ga.addIterationListener(progressListener);
-						ga.evolve(iterCount);
-						ga.removeIterationListener(progressListener);
-						populationNumber += iterCount;
-
-						NeuralNetwork newBrain = ga.getBest();
-						setAgentBrains(newBrain, populationNumber);
-
-						SwingUtilities.invokeLater(new Runnable() {
-							@Override
-							public void run() {
-								progressBar.setVisible(false);
-								populationInfoLabel.setText("Population: " + populationNumber);
-								enableControls();
-								evolveButton.requestFocusInWindow();
-							}
-						});
-					}
-				}).start();
-			}
-		});
-	}
-
 	private static void disableControls() {
-		evolveButton.setEnabled(false);
-		evolveTextField.setEnabled(false);
 		loadButton.setEnabled(false);
 		saveButton.setEnabled(false);
 		staticFoodRadioButton.setEnabled(false);
@@ -522,8 +448,6 @@ public class Main {
 	}
 
 	private static void enableControls() {
-		evolveButton.setEnabled(true);
-		evolveTextField.setEnabled(true);
 		loadButton.setEnabled(!play);
 		saveButton.setEnabled(!play);
 		staticFoodRadioButton.setEnabled(true);
