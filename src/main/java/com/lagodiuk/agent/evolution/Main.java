@@ -22,8 +22,6 @@ import java.awt.GridLayout;
 import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
@@ -31,21 +29,16 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map.Entry;
 import java.util.Random;
 import java.util.prefs.Preferences;
 
-import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
-import javax.swing.JRadioButton;
-import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 
@@ -94,8 +87,6 @@ public class Main {
 
 	private static JButton saveButton;
 
-	private static JButton resetButton;
-
 	private static JProgressBar progressBar;
 
 	private static JLabel statusBar;
@@ -139,8 +130,6 @@ public class Main {
 		initializeLoadFunctionality();
 
 		initializeSaveFunctionality();
-
-		initializeResetButtonFunctionality();
 
 		displayUI();
 
@@ -292,9 +281,6 @@ public class Main {
 		saveButton = addNewButton(controlsPanel, "Save", buttonSize, !play);
 		loadButton = addNewButton(controlsPanel, "Load", buttonSize, !play);
 
-		resetButton = new JButton("reset");
-		controlsPanel.add(resetButton);
-
 		progressBar = new JProgressBar(0, 100);
 		progressBar.setValue(0);
 		progressBar.setVisible(false);
@@ -356,29 +342,6 @@ public class Main {
 						e.printStackTrace();
 					}
 				}
-
-				enableControls();
-			}
-		});
-	}
-
-	private static void initializeResetButtonFunctionality() {
-		resetButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent arg0) {
-				disableControls();
-
-				int populationSize = ga.getPopulation().getSize();
-				int parentalChromosomesSurviveCount = ga.getParentChromosomesSurviveCount();
-				initializeGeneticAlgorithm(populationSize, parentalChromosomesSurviveCount, null);
-
-				NeuralNetwork newBrain = ga.getBest();
-
-				setAgentBrains(newBrain, 0);
-
-				// reset population number counter
-				populationNumber = 0;
-				populationInfoLabel.setText("Population: " + populationNumber);
 
 				enableControls();
 			}
@@ -502,14 +465,5 @@ public class Main {
 				ga.clearCache();
 			}
 		});
-	}
-
-	private static void setAgentBrains(NeuralNetwork newBrain, int generation) {
-		for (FertileAgent fish : environment.getFishes()) {
-			if (fish instanceof NeuralNetworkDrivenAgent) {
-				((NeuralNetworkDrivenAgent) fish).setBrain(newBrain.clone());
-				((NeuralNetworkDrivenAgent) fish).setGeneration(generation);
-			}
-		}
 	}
 }
