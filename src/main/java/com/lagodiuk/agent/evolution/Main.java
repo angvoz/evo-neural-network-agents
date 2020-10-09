@@ -39,7 +39,6 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
-import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 
 import com.lagodiuk.agent.AgentsEnvironment;
@@ -60,8 +59,6 @@ public class Main {
 	private static Random random = new Random();
 
 	private static AgentsEnvironment environment;
-
-	private static int populationNumber = 0;
 
 	private static volatile boolean play = true;
 
@@ -85,8 +82,6 @@ public class Main {
 
 	private static JLabel statusBar;
 
-	private static JLabel populationInfoLabel;
-
 	private static BufferedImage displayEnvironmentBufferedImage;
 
 	private static Graphics2D displayEnvironmentCanvas;
@@ -107,7 +102,7 @@ public class Main {
 		int totalEnergy = environmentWidth * environmentHeight * foodDensity / 1000000;
 		int foodCount = totalEnergy - agentsCount * FertileAgent.NEWBORN_ENERGY_DEFAULT;
 
-		initializeEnvironment(environmentWidth, environmentHeight - 11, agentsCount, foodCount, minNumberOfAgents);
+		initializeEnvironment(environmentWidth, environmentHeight, agentsCount, foodCount, minNumberOfAgents);
 
 		initializeCanvas(environmentWidth, environmentHeight);
 
@@ -247,8 +242,14 @@ public class Main {
 	}
 
 	private static void initializeUI(int environmentWidth, int environmentHeight) {
+		int buttonWidth = 100;
+		int buttonHeight = 40;
+		int horButtonGap = 10;
+		int verButtonGap = 5;
+		int statusBarHeight = 56;
+
 		appFrame = new JFrame("Evolving neural network driven agents");
-		appFrame.setSize(environmentWidth + 130, environmentHeight + 50);
+		appFrame.setSize(environmentWidth + buttonWidth + horButtonGap * 2, environmentHeight + statusBarHeight);
 		appFrame.setResizable(false);
 		appFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
@@ -258,14 +259,12 @@ public class Main {
 		environmentPanel.setSize(environmentWidth, environmentHeight);
 		appFrame.add(environmentPanel, BorderLayout.CENTER);
 
-		Dimension buttonSize = new Dimension(100, 40);
-		int hgap = 0;
-		int vgap = 5;
+		Dimension buttonSize = new Dimension(buttonWidth, buttonHeight);
 		int envHeight = environment.getHeight();
-		int buttonRows = (int) (envHeight / (buttonSize.getHeight() + vgap + 5));
+		int buttonRows = (int) (envHeight / (buttonSize.getHeight() + verButtonGap + 5));
 		controlsPanel = new JPanel();
 		appFrame.add(controlsPanel, BorderLayout.EAST);
-		controlsPanel.setLayout(new GridLayout(buttonRows, 1, hgap, vgap));
+		controlsPanel.setLayout(new GridLayout(buttonRows, 1, horButtonGap, verButtonGap));
 
 		playPauseButton = addNewButton(controlsPanel, play ? "Pause" : "Start", buttonSize, true);
 		saveButton = addNewButton(controlsPanel, "Save", buttonSize, !play);
@@ -279,9 +278,6 @@ public class Main {
 		statusBar = new JLabel();
 		statusBar.setPreferredSize(new Dimension(100, 16));
 		appFrame.add(statusBar, java.awt.BorderLayout.SOUTH);
-
-		populationInfoLabel = new JLabel("Population: " + populationNumber, SwingConstants.CENTER);
-		appFrame.add(populationInfoLabel, BorderLayout.NORTH);
 
 		prefs = Preferences.userNodeForPackage(Main.class);
 		String saveDirPath = prefs.get(PREFS_KEY_SAVE_DIRECTORY, "");
