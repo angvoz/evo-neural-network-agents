@@ -39,7 +39,6 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JProgressBar;
 import javax.swing.SwingUtilities;
 
 import com.lagodiuk.agent.AgentsEnvironment;
@@ -60,7 +59,6 @@ public class Visualizator {
 	private static JButton playPauseButton;
 	private static JButton loadButton;
 	private static JButton saveButton;
-	private static JProgressBar progressBar;
 	private static JLabel statusBar;
 	private static BufferedImage displayEnvironmentBufferedImage;
 	private static Graphics2D displayEnvironmentCanvas;
@@ -134,11 +132,6 @@ public class Visualizator {
 		playPauseButton = addNewButton(controlsPanel, play ? "Pause" : "Start", buttonSize, true);
 		saveButton = addNewButton(controlsPanel, "Save", buttonSize, !play);
 		loadButton = addNewButton(controlsPanel, "Load", buttonSize, !play);
-
-		progressBar = new JProgressBar(0, 100);
-		progressBar.setValue(0);
-		progressBar.setVisible(false);
-		appFrame.add(progressBar, BorderLayout.SOUTH);
 
 		statusBar = new JLabel();
 		statusBar.setPreferredSize(new Dimension(100, 16));
