@@ -346,6 +346,14 @@ public class Environment implements IEnvironment {
 		energyReserve = energy;
 	}
 
+	public int countEnergy() {
+		int countEnergy = energyReserve;
+		for (IAgent agent : agents) {
+			countEnergy += agent.getEnergy();
+		}
+		return countEnergy;
+	}
+
 	public void setMinNumberOfAgents(int minNumberOfAgents) {
 		this.minNumberOfAgents = minNumberOfAgents;
 	}

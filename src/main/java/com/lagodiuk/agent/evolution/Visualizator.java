@@ -318,17 +318,15 @@ public class Visualizator {
 		int countFishes = 0;
 		int countFood = 0;
 		int energyReserve = env.getEnergyReserve();
-		int countEnergy = 0 + energyReserve;
+		int countEnergy = env.countEnergy();
 		int longestGeneration = 0;
 		int shortestGeneration = Integer.MAX_VALUE;
 		HashMap<Integer, Integer> generationCountMap = new HashMap<>();
 		for (IAgent agent : env.getAgents()) {
 			if (agent instanceof IFood) {
 				countFood++;
-				countEnergy += 1;
 			} else if (agent instanceof FertileAgent) {
 				countFishes++;
-				countEnergy += ((FertileAgent) agent).getEnergy();
 				if (agent instanceof NeuralNetworkDrivenAgent) {
 					int generation = ((NeuralNetworkDrivenAgent) agent).getGeneration();
 					longestGeneration = Math.max(generation, longestGeneration);
