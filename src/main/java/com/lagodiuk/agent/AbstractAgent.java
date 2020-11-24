@@ -21,6 +21,10 @@ import javax.xml.bind.annotation.XmlTransient;
 import com.lagodiuk.environment.IEnvironment;
 
 abstract public class AbstractAgent implements IAgent {
+	private static final double NORMAL_ENERGY = 10;
+	private static final double NORMAL_RADIUS = 5;
+	private static final double RADIUS_FACTOR = (NORMAL_RADIUS + 1) * (NORMAL_RADIUS + 1) / NORMAL_ENERGY;
+
 	private double x;
 	private double y;
 
@@ -66,6 +70,11 @@ abstract public class AbstractAgent implements IAgent {
 			throw new RuntimeException("Attempt to set negative energy=" + newEnergy);
 		}
 		energy = newEnergy;
+	}
+
+	@Override
+	public double getRadius() {
+		return Math.sqrt(getEnergy() * RADIUS_FACTOR);
 	}
 
 	@Override

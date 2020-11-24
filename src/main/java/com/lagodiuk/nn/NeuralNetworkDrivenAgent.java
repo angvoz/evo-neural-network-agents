@@ -29,7 +29,6 @@ import com.lagodiuk.environment.IEnvironment;
 import com.lagodiuk.nn.genetic.OptimizableNeuralNetwork;
 
 public class NeuralNetworkDrivenAgent extends FertileAgent {
-	private static final double RADIUS = 5;
 	public static final double EYSIGHT_ANGLE = Math.PI / 4;
 	public static final double EYESIGHT_DISTANCE = 100;
 	private static final double MAX_DELTA_ANGLE = 1;
@@ -57,11 +56,6 @@ public class NeuralNetworkDrivenAgent extends FertileAgent {
 	public NeuralNetworkDrivenAgent(double x, double y, double angle, double speed) {
 		super(x, y, angle, speed);
 		this.generation = 0;
-	}
-
-	@Override
-	public double getRadius() {
-		return RADIUS;
 	}
 
 	/**

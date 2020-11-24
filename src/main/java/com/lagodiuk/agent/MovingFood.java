@@ -20,7 +20,6 @@ import java.util.Random;
 import com.lagodiuk.environment.IEnvironment;
 
 public class MovingFood extends MovingAgent implements IFood {
-	private static double RADIUS = 2;
 	private static int ENERGY = 1;
 	public static final double MAX_SPEED = 3;
 
@@ -33,11 +32,6 @@ public class MovingFood extends MovingAgent implements IFood {
 		super(x, y, angle, speed);
 
 		setEnergy(ENERGY);
-	}
-
-	@Override
-	public double getRadius() {
-		return RADIUS;
 	}
 
 	@Override

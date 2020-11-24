@@ -20,7 +20,6 @@ import java.util.Random;
 import com.lagodiuk.environment.IEnvironment;
 
 public class StaticFood extends AbstractAgent implements IFood {
-	private static double RADIUS = 2;
 	private static int ENERGY = 1;
 
 	@SuppressWarnings("unused")
@@ -32,11 +31,6 @@ public class StaticFood extends AbstractAgent implements IFood {
 		super(x, y);
 
 		setEnergy(ENERGY);
-	}
-
-	@Override
-	public double getRadius() {
-		return RADIUS;
 	}
 
 	@Override
