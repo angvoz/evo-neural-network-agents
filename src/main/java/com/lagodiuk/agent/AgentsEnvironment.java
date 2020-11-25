@@ -57,9 +57,6 @@ public class AgentsEnvironment {
 	private List<AbstractAgent> agents = new ArrayList<AbstractAgent>();
 
 	@XmlTransient
-	private int countEatenFood;
-
-	@XmlTransient
 	private Random random = new Random();
 
 	@XmlTransient
@@ -186,7 +183,6 @@ public class AgentsEnvironment {
 	}
 
 	private void feedAgents() {
-		countEatenFood = 0;
 		for (FertileAgent fish : getFishes()) {
 			double fishRadius = fish.getRadius();
 			for (IFood food : getFood()) {
@@ -196,7 +192,6 @@ public class AgentsEnvironment {
 					if (deltaX < fishRadius) {
 						double distanceToFood = Math.sqrt((deltaX * deltaX) + (deltaY * deltaY));
 						if (distanceToFood < fishRadius) {
-							countEatenFood++;
 							removeFood(food);
 							fish.feed(food);
 							fish.reproduce(this);
@@ -298,10 +293,6 @@ public class AgentsEnvironment {
 
 	public void setMinNumberOfAgents(int minNumberOfAgents) {
 		this.minNumberOfAgents = minNumberOfAgents;
-	}
-
-	public int countEatenFood() {
-		return countEatenFood;
 	}
 
 	public static void marshall(AgentsEnvironment env, OutputStream out) throws Exception {

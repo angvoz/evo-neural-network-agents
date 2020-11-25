@@ -49,12 +49,7 @@ import com.lagodiuk.agent.IFood;
 import com.lagodiuk.agent.MovingAgent;
 import com.lagodiuk.agent.MovingFood;
 import com.lagodiuk.agent.StaticFood;
-import com.lagodiuk.ga.Fitness;
-import com.lagodiuk.ga.GeneticAlgorithm;
-import com.lagodiuk.ga.IterartionListener;
-import com.lagodiuk.ga.Population;
 import com.lagodiuk.nn.NeuralNetwork;
-import com.lagodiuk.nn.genetic.OptimizableNeuralNetwork;
 
 public class Main {
 	private static Visualizator visualizator;
@@ -62,8 +57,6 @@ public class Main {
 	private static final String PREFS_KEY_SAVE_DIRECTORY = "BrainsDirectory";
 
 	private static Random random = new Random();
-
-	private static GeneticAlgorithm<OptimizableNeuralNetwork, Double> ga;
 
 	private static AgentsEnvironment environment;
 
@@ -104,8 +97,6 @@ public class Main {
 	public static void main(String[] args) throws Exception {
 		// TODO maybe, add ability to define these parameters as environment
 		// constants
-		int gaPopulationSize = 5;
-		int parentalChromosomesSurviveCount = 1;
 		int environmentWidth = 1470;
 		int environmentHeight = 850;
 		int agentsCount = 50;
@@ -114,8 +105,6 @@ public class Main {
 		int foodDensity = 800;
 		int totalEnergy = environmentWidth * environmentHeight * foodDensity / 1000000;
 		int foodCount = totalEnergy - agentsCount * FertileAgent.NEWBORN_ENERGY_DEFAULT;
-
-		initializeGeneticAlgorithm(gaPopulationSize, parentalChromosomesSurviveCount, null);
 
 		initializeEnvironment(environmentWidth, environmentHeight - 11, agentsCount, foodCount, minNumberOfAgents);
 
@@ -365,18 +354,11 @@ public class Main {
 				double x = click.getX();
 				double y = click.getY();
 
-				if (SwingUtilities.isLeftMouseButton(click)) {
+				if (SwingUtilities.isRightMouseButton(click)) {
 					IFood food = createRandomFood(1, 1);
 					food.setX(x);
 					food.setY(y);
 					environment.addFood(food);
-				} else {
-					double angle = 2 * Math.PI * random.nextDouble();
-					double speed = 0;
-					NeuralNetworkDrivenAgent agent = new NeuralNetworkDrivenAgent(x, y, angle, speed);
-					OptimizableNeuralNetwork brain = ga.getBest();
-					agent.setBrain(brain);
-					environment.addAgent(agent);
 				}
 			}
 		});
@@ -426,44 +408,4 @@ public class Main {
 		}
 	}
 
-	private static void initializeGeneticAlgorithm(
-			int populationSize,
-			int parentalChromosomesSurviveCount,
-			OptimizableNeuralNetwork baseNeuralNetwork) {
-		Population<OptimizableNeuralNetwork> brains = new Population<OptimizableNeuralNetwork>();
-
-		for (int i = 0; i < (populationSize - 1); i++) {
-			if (baseNeuralNetwork == null) {
-				brains.addChromosome(NeuralNetworkDrivenAgent.randomNeuralNetworkBrain());
-			} else {
-				brains.addChromosome(baseNeuralNetwork.mutate());
-			}
-		}
-		if (baseNeuralNetwork != null) {
-			brains.addChromosome(baseNeuralNetwork);
-		} else {
-			brains.addChromosome(NeuralNetworkDrivenAgent.randomNeuralNetworkBrain());
-		}
-
-		Fitness<OptimizableNeuralNetwork, Double> fit = new TournamentEnvironmentFitness();
-
-		ga = new GeneticAlgorithm<OptimizableNeuralNetwork, Double>(brains, fit);
-
-		addGASystemOutIterationListener();
-
-		ga.setParentChromosomesSurviveCount(parentalChromosomesSurviveCount);
-	}
-
-	private static void addGASystemOutIterationListener() {
-		ga.addIterationListener(new IterartionListener<OptimizableNeuralNetwork, Double>() {
-			@Override
-			public void update(GeneticAlgorithm<OptimizableNeuralNetwork, Double> ga) {
-				OptimizableNeuralNetwork bestBrain = ga.getBest();
-				Double fit = ga.fitness(bestBrain);
-				System.out.println(ga.getIteration() + "\t" + fit);
-
-				ga.clearCache();
-			}
-		});
-	}
 }
