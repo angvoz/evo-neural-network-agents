@@ -129,7 +129,10 @@ public class Main {
 		int environmentHeight = 850;
 		int agentsCount = 50;
 		int minNumberOfAgents = 10;
-		int foodCount = 1000 - agentsCount * FertileAgent.NEWBORN_ENERGY_DEFAULT;
+		// Density per million pixels
+		int foodDensity = 800;
+		int totalEnergy = environmentWidth * environmentHeight * foodDensity / 1000000;
+		int foodCount = totalEnergy - agentsCount * FertileAgent.NEWBORN_ENERGY_DEFAULT;
 
 		initializeGeneticAlgorithm(gaPopulationSize, parentalChromosomesSurviveCount, null);
 
