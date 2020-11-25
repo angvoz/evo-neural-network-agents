@@ -59,9 +59,6 @@ public class AgentsEnvironment {
 	@XmlTransient
 	private Random random = new Random();
 
-	@XmlTransient
-	private List<AgentsEnvironmentObserver> listeners = new ArrayList<AgentsEnvironmentObserver>();
-
 	@SuppressWarnings("unused")
 	private AgentsEnvironment() {
 	}
@@ -71,10 +68,6 @@ public class AgentsEnvironment {
 		this.height = height;
 		this.time = 0;
 		this.energyReserve = 0;
-	}
-
-	public void addListener(AgentsEnvironmentObserver listener) {
-		this.listeners.add(listener);
 	}
 
 	public int getWidth() {
@@ -263,11 +256,6 @@ public class AgentsEnvironment {
 		growAgentsOlder();
 
 		addAgents();
-
-		for (AgentsEnvironmentObserver l : this.listeners) {
-			// keeps score for tournaments
-			l.notify(this);
-		}
 
 		this.time++;
 	}
