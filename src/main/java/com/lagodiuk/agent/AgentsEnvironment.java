@@ -59,6 +59,9 @@ public class AgentsEnvironment {
 	private List<AbstractAgent> agents = new ArrayList<AbstractAgent>();
 
 	@XmlTransient
+	private ArrayList<AbstractAgent> seedAgents = new ArrayList<AbstractAgent>();
+
+	@XmlTransient
 	private Random random = new Random();
 
 	@SuppressWarnings("unused")
@@ -135,7 +138,7 @@ public class AgentsEnvironment {
 		initializeFood(foodCount);
 	}
 
-	public IFood createRandomFood(int x, int y) {
+	private IFood createRandomFood(int x, int y) {
 		IFood food = null;
 		if (FOOD_STATIC) {
 			food = new StaticFood(x, y);
@@ -145,15 +148,19 @@ public class AgentsEnvironment {
 
 			food = new MovingFood(x, y, direction, speed);
 		}
-		addFood(food);
 		return food;
 	}
 
-	public IFood addNewRandomFood() {
+	public void seedFood(int x, int y) {
+		IFood food = createRandomFood(x, y);
+		this.seedAgents.add((AbstractAgent) food);
+	}
+
+	private IFood addNewRandomFood() {
 		int x = random.nextInt(width);
 		int y = random.nextInt(height);
-
 		IFood newFood = createRandomFood(x, y);
+		addAgent((AbstractAgent) newFood);
 		return newFood;
 	}
 
@@ -168,7 +175,6 @@ public class AgentsEnvironment {
 				energyReserve -= newFood.getEnergy();
 			} else {
 				IFood newFood = addNewRandomFood();
-				addFood(newFood);
 				energyReserve -= newFood.getEnergy();
 			}
 		}
@@ -190,6 +196,17 @@ public class AgentsEnvironment {
 	}
 
 	private void addAgents() {
+		ArrayList<AbstractAgent> unbornAgents = new ArrayList<AbstractAgent>();
+		for (AbstractAgent agent : seedAgents) {
+			if (energyReserve >= agent.getEnergy()) {
+				agents.add(agent);
+				energyReserve = energyReserve - agent.getEnergy();
+			} else {
+				unbornAgents.add(agent);
+			}
+		}
+		seedAgents = unbornAgents;
+
 		if (getFishes().size() <= minNumberOfAgents) {
 			// Do not allow life go extinct in this simulation
 			addNewRandomFish();
@@ -277,10 +294,6 @@ public class AgentsEnvironment {
 
 	public synchronized void removeAgent(AbstractAgent agent) {
 		this.agents.remove(agent);
-	}
-
-	private void addFood(IFood food) {
-		addAgent((AbstractAgent) food);
 	}
 
 	public void removeFood(IFood food) {

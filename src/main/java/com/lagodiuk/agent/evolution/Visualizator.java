@@ -164,14 +164,14 @@ public class Visualizator {
 					timeBetweenFrames = TIME_BETWEEN_FRAMES_MAX - source.getValue();
 					timeBetweenFrames = TIME_BETWEEN_FRAMES_MAX - source.getValue();
 				}
-	
+
 			}
-	
+
 		});
 		speedSlider.setMajorTickSpacing(TIME_BETWEEN_FRAMES_MAX / 4);
 		speedSlider.setPaintTicks(true);
 		speedSlider.setPreferredSize(new Dimension(126, 20));
-	
+
 		// Create the label table
 		Hashtable<Integer, JLabel> labelTable = new Hashtable<Integer, JLabel>();
 		labelTable.put(new Integer(0), new JLabel("Slow"));
@@ -293,7 +293,7 @@ public class Visualizator {
 				if (SwingUtilities.isLeftMouseButton(click)) {
 					setSelectedAgent(x, y);
 				} else if (SwingUtilities.isRightMouseButton(click)) {
-					environment.createRandomFood(x, y);
+					environment.seedFood(x, y);
 				}
 			}
 		});
