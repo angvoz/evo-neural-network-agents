@@ -30,6 +30,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlTransient;
 
+import com.lagodiuk.nn.NeuralNetwork;
 import com.lagodiuk.nn.NeuralNetworkDrivenAgent;
 import com.lagodiuk.nn.genetic.OptimizableNeuralNetwork;
 
@@ -101,6 +102,37 @@ public class AgentsEnvironment {
 			}
 		}
 		return filtered;
+	}
+
+	private void initializeFish(int agentsCount) {
+		for (int i = 0; i < agentsCount; i++) {
+			int x = random.nextInt(width);
+			int y = random.nextInt(height);
+			double direction = random.nextDouble() * 2 * Math.PI;
+			double speed = random.nextDouble() * MovingAgent.MAX_SPEED;
+
+			NeuralNetworkDrivenAgent agent = new NeuralNetworkDrivenAgent(x, y, direction, speed);
+			NeuralNetwork brain = NeuralNetworkDrivenAgent.randomNeuralNetworkBrain();
+			agent.setBrain(brain);
+
+			addAgent(agent);
+		}
+	}
+
+	private void initializeFood(int foodCount) {
+		for (int i = 0; i < foodCount; i++) {
+			addNewRandomFood();
+		}
+	}
+
+	public void initialize(int agentsDensity, int foodDensity) {
+		int area = width * height;
+		// Density per million pixels
+		int agentsCount = area * agentsDensity / 1000000;
+		int foodCount = area * foodDensity / 1000000;
+
+		initializeFish(agentsCount);
+		initializeFood(foodCount);
 	}
 
 	public IFood createRandomFood(int x, int y) {
