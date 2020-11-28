@@ -22,6 +22,11 @@ public class MovingFood extends MovingAgent implements IFood {
 	private static int ENERGY = 1;
 	public static final double MAX_SPEED = 3;
 
+	@SuppressWarnings("unused")
+	private MovingFood() {
+		// Required by JAXB
+	}
+
 	public MovingFood(double x, double y, double angle, double speed) {
 		super(x, y, angle, speed);
 

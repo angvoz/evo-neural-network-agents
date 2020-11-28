@@ -15,11 +15,17 @@
  ******************************************************************************/
 package com.lagodiuk.agent;
 
+import javax.xml.bind.annotation.XmlElement;
+
 abstract public class FertileAgent extends MovingAgent {
 	protected static final int PARENTING_ENERGY_DEFAULT = 10;
 	public static final int NEWBORN_ENERGY_DEFAULT = 6;
 
+	@XmlElement
 	private double age;
+
+	protected FertileAgent() {
+	}
 
 	public FertileAgent(double x, double y, double angle, double speed) {
 		super(x, y, angle, speed);

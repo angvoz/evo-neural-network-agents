@@ -66,7 +66,7 @@ import com.lagodiuk.nn.genetic.OptimizableNeuralNetwork;
 public class Main {
 	private static Visualizator visualizator;
 
-	private static final String PREFS_KEY_BRAINS_DIRECTORY = "BrainsDirectory";
+	private static final String PREFS_KEY_SAVE_DIRECTORY = "BrainsDirectory";
 
 	private static Random random = new Random();
 
@@ -94,9 +94,9 @@ public class Main {
 
 	private static JButton playPauseButton;
 
-	private static JButton loadBrainButton;
+	private static JButton loadButton;
 
-	private static JButton saveBrainButton;
+	private static JButton saveButton;
 
 	private static JButton resetButton;
 
@@ -145,15 +145,17 @@ public class Main {
 
 		initializeAddingFoodFunctionality();
 
-		initializeLoadBrainButtonFunctionality();
+		initializeLoadFunctionality();
 
-		initializeSaveBrainButtonFunctionality();
+		initializeSaveFunctionality();
 
 		initializeChangingFoodTypeFunctionality();
 
 		initializeResetButtonFunctionality();
 
 		displayUI();
+
+		enableControls();
 
 		mainEnvironmentLoop();
 	}
@@ -281,17 +283,20 @@ public class Main {
 		appFrame.add(controlsPanel, BorderLayout.EAST);
 		controlsPanel.setLayout(new GridLayout(11, 1, 5, 5));
 
+		playPauseButton = new JButton(play ? "Pause" : "Start");
+		controlsPanel.add(playPauseButton);
+
+		saveButton = new JButton("Save");
+		controlsPanel.add(saveButton);
+
+		loadButton = new JButton("Load");
+		controlsPanel.add(loadButton);
+
 		evolveTextField = new JTextField("10");
 		controlsPanel.add(evolveTextField);
 
 		evolveButton = new JButton("evolve");
 		controlsPanel.add(evolveButton);
-
-		saveBrainButton = new JButton("save brain");
-		controlsPanel.add(saveBrainButton);
-
-		loadBrainButton = new JButton("load brain");
-		controlsPanel.add(loadBrainButton);
 
 		staticFoodRadioButton = new JRadioButton("static food");
 		dynamicFoodRadioButton = new JRadioButton("dynamic food");
@@ -305,9 +310,6 @@ public class Main {
 		} else {
 			dynamicFoodRadioButton.setSelected(true);
 		}
-
-		playPauseButton = new JButton("pause");
-		controlsPanel.add(playPauseButton);
 
 		resetButton = new JButton("reset");
 		controlsPanel.add(resetButton);
@@ -325,8 +327,8 @@ public class Main {
 		appFrame.add(populationInfoLabel, BorderLayout.NORTH);
 
 		prefs = Preferences.userNodeForPackage(Main.class);
-		String brainsDirPath = prefs.get(PREFS_KEY_BRAINS_DIRECTORY, "");
-		fileChooser = new JFileChooser(new File(brainsDirPath));
+		String saveDirPath = prefs.get(PREFS_KEY_SAVE_DIRECTORY, "");
+		fileChooser = new JFileChooser(new File(saveDirPath));
 	}
 
 	protected static void initializeChangingFoodTypeFunctionality() {
@@ -363,8 +365,8 @@ public class Main {
 		dynamicFoodRadioButton.addItemListener(changingFoodTypeListener);
 	}
 
-	private static void initializeLoadBrainButtonFunctionality() {
-		loadBrainButton.addActionListener(new ActionListener() {
+	private static void initializeLoadFunctionality() {
+		loadButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				disableControls();
@@ -372,24 +374,12 @@ public class Main {
 				int returnVal = fileChooser.showOpenDialog(appFrame);
 				if (returnVal == JFileChooser.APPROVE_OPTION) {
 					try {
-						File brainFile = fileChooser.getSelectedFile();
-						prefs.put(PREFS_KEY_BRAINS_DIRECTORY, brainFile.getParent());
+						File file = fileChooser.getSelectedFile();
+						prefs.put(PREFS_KEY_SAVE_DIRECTORY, file.getParent());
 
-						FileInputStream in = new FileInputStream(brainFile);
-
-						NeuralNetwork newBrain = NeuralNetwork.unmarshall(in);
+						FileInputStream in = new FileInputStream(file);
+						environment = AgentsEnvironment.unmarshall(in);
 						in.close();
-
-						setAgentBrains(newBrain, 0);
-
-						OptimizableNeuralNetwork optimizableNewBrain = new OptimizableNeuralNetwork(newBrain);
-						int populationSize = ga.getPopulation().getSize();
-						int parentalChromosomesSurviveCount = ga.getParentChromosomesSurviveCount();
-						initializeGeneticAlgorithm(populationSize, parentalChromosomesSurviveCount, optimizableNewBrain);
-
-						// reset population number counter
-						populationNumber = 0;
-						populationInfoLabel.setText("Population: " + populationNumber);
 					} catch (Exception e) {
 						e.printStackTrace();
 					}
@@ -400,8 +390,8 @@ public class Main {
 		});
 	}
 
-	private static void initializeSaveBrainButtonFunctionality() {
-		saveBrainButton.addActionListener(new ActionListener() {
+	private static void initializeSaveFunctionality() {
+		saveButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				disableControls();
@@ -409,16 +399,11 @@ public class Main {
 				int returnVal = fileChooser.showSaveDialog(appFrame);
 				if (returnVal == JFileChooser.APPROVE_OPTION) {
 					try {
-						File brainFile = fileChooser.getSelectedFile();
-						prefs.put(PREFS_KEY_BRAINS_DIRECTORY, brainFile.getParent());
+						File file = fileChooser.getSelectedFile();
+						prefs.put(PREFS_KEY_SAVE_DIRECTORY, file.getParent());
 
-						FileOutputStream out = new FileOutputStream(brainFile);
-
-						// current brain is the best evolved neural network
-						// from genetic algorithm
-						NeuralNetwork brain = ga.getBest();
-						NeuralNetwork.marshall(brain, out);
-
+						FileOutputStream out = new FileOutputStream(file);
+						AgentsEnvironment.marshall(environment, out);
 						out.close();
 					} catch (Exception e) {
 						e.printStackTrace();
@@ -516,8 +501,8 @@ public class Main {
 	private static void disableControls() {
 		evolveButton.setEnabled(false);
 		evolveTextField.setEnabled(false);
-		loadBrainButton.setEnabled(false);
-		saveBrainButton.setEnabled(false);
+		loadButton.setEnabled(false);
+		saveButton.setEnabled(false);
 		staticFoodRadioButton.setEnabled(false);
 		dynamicFoodRadioButton.setEnabled(false);
 	}
@@ -525,8 +510,8 @@ public class Main {
 	private static void enableControls() {
 		evolveButton.setEnabled(true);
 		evolveTextField.setEnabled(true);
-		loadBrainButton.setEnabled(true);
-		saveBrainButton.setEnabled(true);
+		loadButton.setEnabled(!play);
+		saveButton.setEnabled(!play);
 		staticFoodRadioButton.setEnabled(true);
 		dynamicFoodRadioButton.setEnabled(true);
 	}
@@ -561,10 +546,11 @@ public class Main {
 			public void actionPerformed(ActionEvent event) {
 				play = !play;
 				if (play) {
-					playPauseButton.setText("pause");
+					playPauseButton.setText("Pause");
 				} else {
-					playPauseButton.setText("play");
+					playPauseButton.setText("Continue");
 				}
+				enableControls();
 			}
 		});
 	}

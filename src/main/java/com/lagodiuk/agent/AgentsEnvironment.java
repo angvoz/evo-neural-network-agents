@@ -15,28 +15,59 @@
  ******************************************************************************/
 package com.lagodiuk.agent;
 
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElementWrapper;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlSeeAlso;
+import javax.xml.bind.annotation.XmlTransient;
+
 import com.lagodiuk.agent.evolution.NeuralNetworkDrivenAgent;
 import com.lagodiuk.nn.genetic.OptimizableNeuralNetwork;
 
+@XmlSeeAlso({ StaticFood.class, MovingFood.class, OptimizableNeuralNetwork.class, NeuralNetworkDrivenAgent.class })
+
+@XmlRootElement(name="environment")
 public class AgentsEnvironment {
 	public static final boolean FOOD_CELL_DIVISION = true;
 
+	@XmlElement
 	private int width;
+	@XmlElement
 	private int height;
+	@XmlElement
 	private double time;
+	@XmlElement
 	private int energyReserve;
+	@XmlElement
+	private int minNumberOfAgents = 10;
+	@XmlElement
+	private long countMutation;
+
+	@XmlElementWrapper(name = "agents")
+	@XmlElement(name = "agent")
+	private List<AbstractAgent> agents = new ArrayList<AbstractAgent>();
+
+	@XmlTransient
 	private int countEatenFood;
 
+	@XmlTransient
 	private Random random = new Random();
 
-	private List<AbstractAgent> agents = new ArrayList<AbstractAgent>();
-	private int minNumberOfAgents = 10;
-
+	@XmlTransient
 	private List<AgentsEnvironmentObserver> listeners = new ArrayList<AgentsEnvironmentObserver>();
+
+	@SuppressWarnings("unused")
+	private AgentsEnvironment() {
+	}
 
 	public AgentsEnvironment(int width, int height) {
 		this.width = width;
@@ -256,6 +287,7 @@ public class AgentsEnvironment {
 		return maxGeneration;
 	}
 
+	@XmlTransient
 	public int getEnergyReserve() {
 		return energyReserve;
 	}
@@ -270,5 +302,22 @@ public class AgentsEnvironment {
 
 	public int countEatenFood() {
 		return countEatenFood;
+	}
+
+	public static void marshall(AgentsEnvironment env, OutputStream out) throws Exception {
+		env.countMutation = NeuralNetworkDrivenAgent.getMutationCount();
+		JAXBContext context = JAXBContext.newInstance(AgentsEnvironment.class);
+		Marshaller marshaller = context.createMarshaller();
+		marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+		marshaller.marshal(env, out);
+		out.flush();
+	}
+
+	public static AgentsEnvironment unmarshall(InputStream in) throws Exception {
+		JAXBContext context = JAXBContext.newInstance(AgentsEnvironment.class);
+		Unmarshaller unmarshaller = context.createUnmarshaller();
+		AgentsEnvironment env = (AgentsEnvironment) unmarshaller.unmarshal(in);
+		NeuralNetworkDrivenAgent.setMutationCount(env.countMutation);
+		return env;
 	}
 }

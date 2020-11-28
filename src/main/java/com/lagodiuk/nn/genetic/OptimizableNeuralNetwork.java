@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
-import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
 import com.lagodiuk.ga.Chromosome;
@@ -30,11 +29,8 @@ import com.lagodiuk.nn.NeuralNetwork;
 import com.lagodiuk.nn.Neuron;
 import com.lagodiuk.nn.ThresholdFunction;
 
-@XmlRootElement
 public class OptimizableNeuralNetwork extends NeuralNetwork implements Chromosome<OptimizableNeuralNetwork>, Cloneable {
-
 	private static double weightsMutationInterval = 1;
-
 	private static double neuronParamsMutationInterval = 1;
 
 	@XmlTransient

@@ -21,6 +21,9 @@ public abstract class MovingAgent extends AbstractAgent {
 	private double angle;
 	private double speed;
 
+	protected MovingAgent() {
+	}
+
 	public MovingAgent(double x, double y, double angle, double speed) {
 		super(x, y);
 		this.speed = speed;

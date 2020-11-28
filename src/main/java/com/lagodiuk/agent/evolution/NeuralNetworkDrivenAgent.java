@@ -19,6 +19,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlTransient;
+
 import com.lagodiuk.agent.AgentsEnvironment;
 import com.lagodiuk.agent.FertileAgent;
 import com.lagodiuk.agent.IAgent;
@@ -36,12 +39,20 @@ public class NeuralNetworkDrivenAgent extends FertileAgent {
 	private static final double FOOD = 10;
 	private static final int MUTATE_CHANCE_NEWBORN = 10;
 
+	@XmlElement
 	private volatile NeuralNetwork brain;
-
-	private static volatile long countMutation = 0;
+	@XmlElement
 	private int generation = 0;
 
+	private static volatile long countMutation = 0;
+
+	@XmlTransient
 	private Random random = new Random();
+
+	@SuppressWarnings("unused")
+	private NeuralNetworkDrivenAgent() {
+		// Required by JAXB
+	}
 
 	public NeuralNetworkDrivenAgent(double x, double y, double angle, double speed) {
 		super(x, y, angle, speed);
@@ -276,6 +287,7 @@ public class NeuralNetworkDrivenAgent extends FertileAgent {
 		return newAgent;
 	}
 
+	@XmlTransient
 	public int getGeneration() {
 		return this.generation;
 	}
@@ -286,5 +298,9 @@ public class NeuralNetworkDrivenAgent extends FertileAgent {
 
 	static public long getMutationCount() {
 		return countMutation;
+	}
+
+	static public void setMutationCount(long newCountMutation) {
+		countMutation = newCountMutation;
 	}
 }

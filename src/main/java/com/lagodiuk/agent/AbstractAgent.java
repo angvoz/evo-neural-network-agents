@@ -15,11 +15,18 @@
  ******************************************************************************/
 package com.lagodiuk.agent;
 
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlTransient;
+
 abstract public class AbstractAgent implements IAgent {
 	private double x;
 	private double y;
 
+	@XmlElement
 	private int energy;
+
+	protected AbstractAgent() {
+	}
 
 	public AbstractAgent(double x, double y) {
 		this.x = x;
@@ -47,6 +54,7 @@ abstract public class AbstractAgent implements IAgent {
 	}
 
 	@Override
+	@XmlTransient
 	public int getEnergy() {
 		return energy;
 	}
