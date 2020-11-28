@@ -64,9 +64,10 @@ abstract public class FertileAgent extends MovingAgent {
 
 	private void dissipateEnergy(IEnvironment env) {
 		final int radiateEnergy = 1;
-		int energy = getEnergy();
-		if (energy > 0) {
-			if (age % 100 == 0) {
+		if (isAlive()) {
+			double radius = getRadius();
+			if (radius > 0 && (age % (int) (500.0 / radius) == 0)) {
+				int energy = getEnergy();
 				setEnergy(energy - radiateEnergy);
 				env.addEnergyReserve(radiateEnergy);
 			}
