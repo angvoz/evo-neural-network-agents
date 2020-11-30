@@ -30,7 +30,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlTransient;
 
-import com.lagodiuk.agent.evolution.NeuralNetworkDrivenAgent;
+import com.lagodiuk.nn.NeuralNetworkDrivenAgent;
 import com.lagodiuk.nn.genetic.OptimizableNeuralNetwork;
 
 @XmlSeeAlso({ StaticFood.class, MovingFood.class, OptimizableNeuralNetwork.class, NeuralNetworkDrivenAgent.class })

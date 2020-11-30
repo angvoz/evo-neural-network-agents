@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ******************************************************************************/
-package com.lagodiuk.agent.evolution;
+package com.lagodiuk.nn;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -26,8 +26,6 @@ import com.lagodiuk.agent.AgentsEnvironment;
 import com.lagodiuk.agent.FertileAgent;
 import com.lagodiuk.agent.IAgent;
 import com.lagodiuk.agent.IFood;
-import com.lagodiuk.nn.NeuralNetwork;
-import com.lagodiuk.nn.ThresholdFunction;
 import com.lagodiuk.nn.genetic.OptimizableNeuralNetwork;
 
 public class NeuralNetworkDrivenAgent extends FertileAgent {
@@ -199,12 +197,12 @@ public class NeuralNetworkDrivenAgent extends FertileAgent {
 		return nnInputs;
 	}
 
-	protected boolean inSight(IAgent agent) {
+	public boolean inSight(IAgent agent) {
 		double crossProduct = this.cosTeta(this.getRx(), this.getRy(), agent.getX() - this.getX(), agent.getY() - this.getY());
 		return (crossProduct > 0);
 	}
 
-	protected double distanceTo(IAgent agent) {
+	public double distanceTo(IAgent agent) {
 		return this.module(agent.getX() - this.getX(), agent.getY() - this.getY());
 	}
 

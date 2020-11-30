@@ -23,6 +23,7 @@ import com.lagodiuk.agent.AgentsEnvironment;
 import com.lagodiuk.agent.FertileAgent;
 import com.lagodiuk.agent.IFood;
 import com.lagodiuk.agent.MovingAgent;
+import com.lagodiuk.nn.NeuralNetworkDrivenAgent;
 
 public class Visualizator {
 	private AgentsEnvironment environment;

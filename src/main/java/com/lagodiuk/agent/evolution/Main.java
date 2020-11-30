@@ -50,6 +50,7 @@ import com.lagodiuk.agent.MovingAgent;
 import com.lagodiuk.agent.MovingFood;
 import com.lagodiuk.agent.StaticFood;
 import com.lagodiuk.nn.NeuralNetwork;
+import com.lagodiuk.nn.NeuralNetworkDrivenAgent;
 
 public class Main {
 	private static Visualizator visualizator;
