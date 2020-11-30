@@ -18,7 +18,10 @@ package com.lagodiuk.agent;
 import com.lagodiuk.environment.IEnvironment;
 
 public abstract class MovingAgent extends AbstractAgent {
-	public static final double MAX_SPEED = 4;
+	private static final double NORMAL_RADIUS = 5;
+	private static final double NORMAL_SPEED = 4;
+	private static final double MIN_RADIUS = 1;
+	public static final double MAX_SPEED = NORMAL_SPEED * NORMAL_RADIUS / MIN_RADIUS;
 
 	private double angle;
 	private double speed;
@@ -45,8 +48,9 @@ public abstract class MovingAgent extends AbstractAgent {
 	}
 
 	private double underSpeedLimit(double speed) {
-		if (speed > MAX_SPEED) {
-			speed = MAX_SPEED;
+		double maxSpeed = MAX_SPEED * MIN_RADIUS / getRadius();
+		if (speed > maxSpeed) {
+			speed = maxSpeed;
 		} else if (speed < 0) {
 			speed = 0;
 		}
