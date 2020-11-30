@@ -80,24 +80,26 @@ public class NeuralNetworkDrivenAgent extends FertileAgent {
 	 */
 	@Override
 	public synchronized void interact(IEnvironment env) {
-		List<Double> nnInputs = this.createNnInputs(env);
+		super.interact(env);
 
-		this.activateNeuralNetwork(nnInputs);
+		if (isAlive()) {
+			List<Double> nnInputs = this.createNnInputs(env);
 
-		int neuronsCount = this.brain.getNeuronsCount();
-		double deltaAngle = this.brain.getAfterActivationSignal(neuronsCount - 2);
-		double deltaSpeed = this.brain.getAfterActivationSignal(neuronsCount - 1);
+			this.activateNeuralNetwork(nnInputs);
 
-		deltaSpeed = this.avoidNaNAndInfinity(deltaSpeed);
-		deltaAngle = this.avoidNaNAndInfinity(deltaAngle);
+			int neuronsCount = this.brain.getNeuronsCount();
+			double deltaAngle = this.brain.getAfterActivationSignal(neuronsCount - 2);
+			double deltaSpeed = this.brain.getAfterActivationSignal(neuronsCount - 1);
 
-		double newSpeed = this.getSpeed() + deltaSpeed;
-		double newAngle = this.getAngle() + this.normalizeDeltaAngle(deltaAngle);
+			deltaSpeed = this.avoidNaNAndInfinity(deltaSpeed);
+			deltaAngle = this.avoidNaNAndInfinity(deltaAngle);
 
-		this.setAngle(newAngle);
-		this.setSpeed(newSpeed);
+			double newSpeed = this.getSpeed() + deltaSpeed;
+			double newAngle = this.getAngle() + this.normalizeDeltaAngle(deltaAngle);
 
-		move(env);
+			this.setAngle(newAngle);
+			this.setSpeed(newSpeed);
+		}
 	}
 
 	private double avoidNaNAndInfinity(double x) {
@@ -206,6 +208,10 @@ public class NeuralNetworkDrivenAgent extends FertileAgent {
 	}
 
 	public boolean inSight(IAgent agent, IEnvironment env) {
+		if (!isAlive()) {
+			return false;
+		}
+
 		double x = agent.getX();
 		double y = agent.getY();
 		if (inSightInternal(x, y)) {

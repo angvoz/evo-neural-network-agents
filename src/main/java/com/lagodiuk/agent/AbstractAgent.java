@@ -31,6 +31,12 @@ abstract public class AbstractAgent implements IAgent {
 	@XmlElement
 	private int energy;
 
+	@XmlTransient
+	private boolean isEvaluated = false;
+
+	@XmlTransient
+	private boolean isAlive = false;
+
 	protected AbstractAgent() {
 	}
 
@@ -65,11 +71,13 @@ abstract public class AbstractAgent implements IAgent {
 		return energy;
 	}
 
+	@Override
 	public void setEnergy(int newEnergy) {
 		if (newEnergy < 0) {
 			throw new RuntimeException("Attempt to set negative energy=" + newEnergy);
 		}
 		energy = newEnergy;
+		isAlive = energy > 0;
 	}
 
 	@Override
@@ -77,7 +85,18 @@ abstract public class AbstractAgent implements IAgent {
 		return Math.sqrt(getEnergy() * RADIUS_FACTOR);
 	}
 
+	public void evaluate(IEnvironment env) {
+		isEvaluated = true;
+	}
+
 	@Override
 	public void interact(IEnvironment env) {
+		if (!isEvaluated) {
+			evaluate(env);
+		}
+	}
+
+	public boolean isAlive() {
+		return isAlive;
 	}
 }

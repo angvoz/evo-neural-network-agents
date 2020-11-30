@@ -11,10 +11,13 @@ public interface IEnvironment {
 	int getHeight();
 	double getTime();
 
+	public void addEnergyReserve(int energy);
+
 	public void initialize(int agentsDensity, int foodDensity);
 
 	void addAgent(AbstractAgent agent);
 	void removeAgent(AbstractAgent agent);
+	List<AbstractAgent> getAgents();
 
 	List<IFood> getFood();
 	List<FertileAgent> getFishes();

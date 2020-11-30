@@ -51,7 +51,7 @@ public class TestMovingAgent {
 		assertEquals(2.5, agent.getY(), DELTA_ZERO);
 
 		env.addAgent(agent);
-		List<IAgent> agents = env.getAgents();
+		List<AbstractAgent> agents = env.getAgents();
 		assertEquals(1, agents.size());
 		assertSame(agent, agents.get(0));
 

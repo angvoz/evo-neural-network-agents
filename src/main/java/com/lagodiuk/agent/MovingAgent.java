@@ -95,9 +95,9 @@ public abstract class MovingAgent extends AbstractAgent {
 	}
 
 	private void collide(IEnvironment env) {
-		if (!(this instanceof IFood) && getEnergy() > 0) {
+		if (!(this instanceof IFood) && isAlive()) {
 			for (MovingAgent otherAgent : env.getFishes()) {
-				if (this != otherAgent && !(otherAgent instanceof IFood) && otherAgent.getEnergy() > 0) {
+				if (this != otherAgent && !(otherAgent instanceof IFood) && otherAgent.isAlive()) {
 					double futureDistance = module(otherAgent.getX() - (getX() + getRx() * getSpeed()), otherAgent.getY() - (getY() + this.getRy() * getSpeed()));
 					if (futureDistance < this.getRadius() + otherAgent.getRadius() + 3) {
 						collide(env, otherAgent);
@@ -120,5 +120,12 @@ public abstract class MovingAgent extends AbstractAgent {
 		setY(getY() + (ry * speed));
 
 		env.addAgent(this);
+	}
+
+	@Override
+	public void interact(IEnvironment env) {
+		super.interact(env);
+
+		move(env);
 	}
 }

@@ -18,6 +18,7 @@ package com.lagodiuk.environment;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
@@ -69,6 +70,9 @@ public class Environment implements IEnvironment {
 	private ArrayList<AbstractAgent> seedAgents = new ArrayList<AbstractAgent>();
 
 	@XmlTransient
+	private List<IFood> foodAgents = null;
+
+	@XmlTransient
 	private Random random = new Random();
 
 	@SuppressWarnings("unused")
@@ -100,8 +104,8 @@ public class Environment implements IEnvironment {
 	@Override
 	public List<FertileAgent> getFishes() {
 		List<FertileAgent> filtered = new ArrayList<FertileAgent>();
-		for (IAgent agent : this.agents) {
-			if (agent instanceof FertileAgent) {
+		for (AbstractAgent agent : this.agents) {
+			if (agent instanceof FertileAgent && agent.isAlive()) {
 				filtered.add((FertileAgent) agent);
 			}
 		}
@@ -110,13 +114,7 @@ public class Environment implements IEnvironment {
 
 	@Override
 	public List<IFood> getFood() {
-		List<IFood> filtered = new ArrayList<IFood>();
-		for (IAgent agent : this.agents) {
-			if (agent instanceof IFood) {
-				filtered.add((IFood) agent);
-			}
-		}
-		return filtered;
+		return foodAgents;
 	}
 
 	private void initializeFish(int agentsCount) {
@@ -149,6 +147,8 @@ public class Environment implements IEnvironment {
 
 		initializeFish(agentsCount);
 		initializeFood(foodCount);
+
+		evaluate();
 	}
 
 	private IFood createRandomFood(int x, int y) {
@@ -208,11 +208,15 @@ public class Environment implements IEnvironment {
 		}
 	}
 
-	private void addAgents() {
+	private void removeDeadAgents() {
+		agents.removeIf(agent -> !agent.isAlive());
+	}
+
+	private void addNewbornAgents() {
 		ArrayList<AbstractAgent> unbornAgents = new ArrayList<AbstractAgent>();
 		for (AbstractAgent agent : seedAgents) {
 			if (energyReserve >= agent.getEnergy()) {
-				agents.add(agent);
+				addAgent(agent);
 				energyReserve = energyReserve - agent.getEnergy();
 			} else {
 				unbornAgents.add(agent);
@@ -229,54 +233,10 @@ public class Environment implements IEnvironment {
 		}
 	}
 
-	private void interactAgents() {
-		for (IAgent agent : this.getAgents()) {
-			agent.interact(this);
-		}
-	}
-
-	private void moveAgents() {
-		for (IAgent agent : this.getAgents()) {
-			if (agent instanceof MovingAgent) {
-				((MovingAgent) agent).move(this);
-			}
-		}
-	}
-
-	private void feedAgents() {
-		for (FertileAgent fish : getFishes()) {
-			double fishRadius = fish.getRadius();
-			for (IFood food : getFood()) {
-				double deltaY = Math.abs(food.getY() - fish.getY());
-				if (deltaY < fishRadius) {
-					double deltaX = Math.abs(food.getX() - fish.getX());
-					if (deltaX < fishRadius) {
-						double distanceToFood = Math.sqrt((deltaX * deltaX) + (deltaY * deltaY));
-						if (distanceToFood < fishRadius) {
-							removeFood(food);
-							fish.feed(food);
-							fish.reproduce(this);
-							break;
-						}
-					}
-				}
-			}
-		}
-	}
-
-	private void growAgentsOlder() {
-		for (FertileAgent agent : getFishes()) {
-			int upkeepEnergy = agent.grow();
-			if (agent.getEnergy() <= 0) {
-				this.removeAgent(agent);
-			}
-			energyReserve += upkeepEnergy;
-		}
-	}
-
-	public List<IAgent> getAgents() {
+	@Override
+	public List<AbstractAgent> getAgents() {
 		// to avoid concurrent modification exception
-		return new ArrayList<IAgent>(this.agents);
+		return new ArrayList<AbstractAgent>(this.agents);
 	}
 
 	@Override
@@ -311,18 +271,33 @@ public class Environment implements IEnvironment {
 		this.agents.remove(agent);
 	}
 
-	public void removeFood(IFood food) {
-		removeAgent((AbstractAgent) food);
+	private void evaluate() {
+		foodAgents = new ArrayList<IFood>();
+		for (AbstractAgent agent : agents) {
+			if (agent instanceof IFood && agent.isAlive()) {
+				foodAgents.add((IFood) agent);
+			}
+		}
 	}
 
 	@Override
 	public synchronized void timeStep() {
-		interactAgents();
-		moveAgents();
-		feedAgents();
-		growAgentsOlder();
+		List<AbstractAgent> agents = new ArrayList<AbstractAgent>(this.agents);
+		Collections.shuffle(agents);
+		for (AbstractAgent agent : agents) {
+			if (agent.isAlive()) {
+				agent.interact(this);
+			}
+		}
 
-		addAgents();
+		removeDeadAgents();
+		addNewbornAgents();
+
+		for (AbstractAgent agent : this.agents) {
+			agent.evaluate(this);
+		}
+
+		evaluate();
 
 		this.time++;
 	}
@@ -344,6 +319,11 @@ public class Environment implements IEnvironment {
 
 	public void setEnergyReserve(int energy) {
 		energyReserve = energy;
+	}
+
+	@Override
+	public void addEnergyReserve(int energy) {
+		energyReserve += energy;
 	}
 
 	public int countEnergy() {

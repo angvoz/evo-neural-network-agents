@@ -36,24 +36,51 @@ abstract public class FertileAgent extends MovingAgent {
 		setEnergy(NEWBORN_ENERGY_DEFAULT);
 	}
 
-	private int dissipateEnergy() {
+	private void feed(IEnvironment env) {
+		double fishRadius = getRadius();
+		for (IFood food : env.getFood()) {
+			double deltaY = Math.abs(food.getY() - getY());
+			if (deltaY < fishRadius) {
+				double deltaX = Math.abs(food.getX() - getX());
+				if (deltaX < fishRadius) {
+					double distanceToFood = Math.sqrt((deltaX * deltaX) + (deltaY * deltaY));
+					if (distanceToFood < fishRadius) {
+						feed(food);
+						break;
+					}
+				}
+			}
+		}
+	}
+
+	@Override
+	public synchronized void interact(IEnvironment env) {
+		super.interact(env);
+
+		feed(env);
+		reproduce(env);
+		grow(env);
+	}
+
+	private void dissipateEnergy(IEnvironment env) {
 		final int radiateEnergy = 1;
 		int energy = getEnergy();
 		if (energy > 0) {
 			if (age % 100 == 0) {
 				setEnergy(energy - radiateEnergy);
+				env.addEnergyReserve(radiateEnergy);
 			}
 		}
-		return energy - getEnergy();
 	}
 
-	public int grow() {
+	public void grow(IEnvironment env) {
 		age++;
-		return dissipateEnergy();
+		dissipateEnergy(env);
 	}
 
 	public void feed(IFood food) {
 		setEnergy(getEnergy() + food.getEnergy());
+		food.setEnergy(0);
 	}
 
 	abstract public FertileAgent reproduce(IEnvironment env);

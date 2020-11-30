@@ -25,5 +25,7 @@ public interface IAgent {
 	void setY(double y);
 
 	public int getEnergy();
+	public void setEnergy(int energy);
+
 	void interact(IEnvironment env);
 }

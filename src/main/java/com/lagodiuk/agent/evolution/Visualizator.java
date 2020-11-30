@@ -413,7 +413,7 @@ public class Visualizator {
 
 	private Color getColorBody(FertileAgent agent) {
 		Color colorBody = Color.GRAY;
-		if (agent.getEnergy() <= 0) {
+		if (!agent.isAlive()) {
 			colorBody = Color.BLACK;
 		} else {
 			int red = Math.max(255 - agent.getEnergy() * 25, 0);
@@ -425,7 +425,7 @@ public class Visualizator {
 
 	private Color colorBodyOutline(FertileAgent agent) {
 		Color colorBodyOutline = Color.GRAY;
-		if (agent.getEnergy() <= 0) {
+		if (!agent.isAlive()) {
 			colorBodyOutline = Color.WHITE;
 		} else {
 			int agentEnergy = agent.getEnergy();
