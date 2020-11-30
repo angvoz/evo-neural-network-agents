@@ -48,9 +48,5 @@ abstract public class FertileAgent extends MovingAgent {
 		setEnergy(getEnergy() + food.getEnergy());
 	}
 
-	public boolean isPregnant() {
-		return getEnergy() >= PARENTING_ENERGY_DEFAULT;
-	}
-
-	abstract public FertileAgent reproduce();
+	abstract public FertileAgent reproduce(AgentsEnvironment env);
 }

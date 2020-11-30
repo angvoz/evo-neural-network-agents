@@ -98,83 +98,20 @@ public class AgentsEnvironment {
 		return food;
 	}
 
-	private IFood reproduceFood(IFood food) {
-		double x = food.getX();
-		double y = food.getY();
-
-		double speed = random.nextDouble() * 2;
-		double direction = random.nextDouble() * 2 * Math.PI;
-		IFood newFood = new MovingFood(x, y, direction, speed);
-
-		return newFood;
-	}
-
-	private void feedAgents() {
-		countEatenFood = 0;
-		for (IFood food : getFood()) {
-			for (FertileAgent fish : getFishes()) {
-				double fishRadius = fish.getRadius();
-				double deltaY = Math.abs(food.getY() - fish.getY());
-				if (deltaY < fishRadius) {
-					double deltaX = Math.abs(food.getX() - fish.getX());
-					if (deltaX < fishRadius) {
-						double distanceToFood = Math.sqrt((deltaX * deltaX) + (deltaY * deltaY));
-						if (distanceToFood < fishRadius) {
-							countEatenFood++;
-							removeFood(food);
-							fish.feed(food);
-							if (fish.isPregnant()) {
-								FertileAgent newFish = fish.reproduce();
-								addAgent(newFish);
-							}
-							break;
-						}
-					}
-				}
-			}
-		}
-	}
-
-	public synchronized void timeStep() {
-		// Move agents
-		for (IAgent agent : this.getAgents()) {
-			agent.interact(this);
-			this.avoidMovingOutsideOfBounds(agent);
-		}
-
-		// Feed Agents
-		this.feedAgents();
-		growAgentsOlder();
-		if (getFishes().size() <= ENDANGERED_SPECIES) {
-			// Do not allow life go extinct in this simulation
-			addNewRandomFish();
-		}
-		if (getFishes().size() > ENDANGERED_SPECIES) {
-			addNewFood();
-		}
-
-		for (AgentsEnvironmentObserver l : this.listeners) {
-			// keeps score for tournaments
-			l.notify(this);
-		}
-
-		this.time++;
-	}
-
 	private void addNewFood() {
+		ArrayList<IFood> foodPool = new ArrayList<IFood>(getFood());
 		while (energyReserve > 0) {
-			int foodEnergy = 1;
-			List<IFood> allFood = this.getFood();
-			IFood food;
-			if (FOOD_CELL_DIVISION && allFood.size() > 0) {
-				int index = random.nextInt(allFood.size());
-				food = reproduceFood(allFood.get(index));
-				this.addFood(food);
+			if (FOOD_CELL_DIVISION && foodPool.size() > 0) {
+				int index = random.nextInt(foodPool.size());
+				IFood food = foodPool.get(index);
+				IFood newFood = food.reproduce(this);
+				foodPool.remove(food);
+				energyReserve -= newFood.getEnergy();
 			} else {
-				food = createRandomFood(this.getWidth(), this.getHeight());
-				this.addFood(food);
+				IFood newFood = createRandomFood(this.getWidth(), this.getHeight());
+				addFood(newFood);
+				energyReserve -= newFood.getEnergy();
 			}
-			energyReserve -= foodEnergy;
 		}
 	}
 
@@ -193,6 +130,53 @@ public class AgentsEnvironment {
 		}
 	}
 
+	private void addAgents() {
+		if (getFishes().size() <= ENDANGERED_SPECIES) {
+			// Do not allow life go extinct in this simulation
+			addNewRandomFish();
+		}
+		if (getFishes().size() > ENDANGERED_SPECIES) {
+			addNewFood();
+		}
+	}
+
+	private void interactAgents() {
+		for (IAgent agent : this.getAgents()) {
+			agent.interact(this);
+		}
+	}
+
+	private void moveAgents() {
+		for (IAgent agent : this.getAgents()) {
+			if (agent instanceof MovingAgent) {
+				((MovingAgent) agent).move(this);
+			}
+		}
+	}
+
+	private void feedAgents() {
+		countEatenFood = 0;
+		for (FertileAgent fish : getFishes()) {
+			double fishRadius = fish.getRadius();
+			for (IFood food : getFood()) {
+				double deltaY = Math.abs(food.getY() - fish.getY());
+				if (deltaY < fishRadius) {
+					double deltaX = Math.abs(food.getX() - fish.getX());
+					if (deltaX < fishRadius) {
+						double distanceToFood = Math.sqrt((deltaX * deltaX) + (deltaY * deltaY));
+						if (distanceToFood < fishRadius) {
+							countEatenFood++;
+							removeFood(food);
+							fish.feed(food);
+							fish.reproduce(this);
+							break;
+						}
+					}
+				}
+			}
+		}
+	}
+
 	private void growAgentsOlder() {
 		for (FertileAgent agent : getFishes()) {
 			int upkeepEnergy = agent.grow();
@@ -203,35 +187,34 @@ public class AgentsEnvironment {
 		}
 	}
 
-	/**
-	 * avoid moving outside of environment
-	 */
-	private void avoidMovingOutsideOfBounds(IAgent agent) {
-		double newX = agent.getX();
-		double newY = agent.getY();
-		if (newX < 0) {
-			newX = this.width - 1;
-		}
-		if (newY < 0) {
-			newY = this.height - 1;
-		}
-		if (newX > this.width) {
-			newX = 1;
-		}
-		if (newY > this.height) {
-			newY = 1;
-		}
-
-		agent.setX(newX);
-		agent.setY(newY);
-	}
-
 	public List<IAgent> getAgents() {
 		// to avoid concurrent modification exception
 		return new ArrayList<IAgent>(this.agents);
 	}
 
 	public synchronized void addAgent(AbstractAgent agent) {
+		double x = agent.getX();
+		double y = agent.getY();
+		if (x < 0) {
+			x = x + width;
+		}
+		if (y < 0) {
+			y = y + height;
+		}
+		if (x >= width) {
+			x = x - width;
+		}
+		if (y >= height) {
+			y = y - height;
+		}
+
+		boolean expected = (x >= 0) && (x < width) && (y >= 0) && (y < height);
+		if (!expected) {
+			throw new RuntimeException("addAgent: agent in inconsistent state");
+		}
+
+		agent.setX(x);
+		agent.setY(y);
 		this.agents.add(agent);
 	}
 
@@ -245,6 +228,22 @@ public class AgentsEnvironment {
 
 	public void removeFood(IFood food) {
 		removeAgent((AbstractAgent) food);
+	}
+
+	public synchronized void timeStep() {
+		interactAgents();
+		moveAgents();
+		feedAgents();
+		growAgentsOlder();
+
+		addAgents();
+
+		for (AgentsEnvironmentObserver l : this.listeners) {
+			// keeps score for tournaments
+			l.notify(this);
+		}
+
+		this.time++;
 	}
 
 	public int getLongestGeneration() {

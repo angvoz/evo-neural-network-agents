@@ -131,9 +131,9 @@ public class Visualizator {
 		int radiusEye = 1;
 		int diameterEye = radiusEye * 2;
 		double angleEye = agent.getAngle() + theta;
-		double rx = -Math.sin(angleEye);
+		double rx = Math.cos(angleEye);
 		int x = (int) (rx * radiusEyeBase + agent.getX() - radiusEye);
-		double ry = Math.cos(angleEye);
+		double ry = Math.sin(angleEye);
 		int y = (int) (ry * radiusEyeBase + agent.getY() - radiusEye);
 
 		canvas.drawOval(x, y, diameterEye, diameterEye);

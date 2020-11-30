@@ -28,7 +28,7 @@ public abstract class MovingAgent extends AbstractAgent {
 	}
 
 	public double getAngle() {
-		return this.angle;
+		return angle;
 	}
 
 	public void setAngle(double angle) {
@@ -36,7 +36,7 @@ public abstract class MovingAgent extends AbstractAgent {
 	}
 
 	public double getSpeed() {
-		return this.speed;
+		return speed;
 	}
 
 	private double underSpeedLimit(double speed) {
@@ -53,12 +53,12 @@ public abstract class MovingAgent extends AbstractAgent {
 	}
 
 	public double getRx() {
-		double rx = -Math.sin(this.angle);
+		double rx = Math.cos(angle);
 		return rx;
 	}
 
 	public double getRy() {
-		double ry = Math.cos(this.angle);
+		double ry = Math.sin(angle);
 		return ry;
 	}
 
@@ -106,14 +106,14 @@ public abstract class MovingAgent extends AbstractAgent {
 	protected void move(AgentsEnvironment env) {
 		collide(env);
 
-		double rx = -Math.sin(this.angle);
-		double ry = Math.cos(this.angle);
-		this.setX(this.getX() + (rx * this.speed));
-		this.setY(this.getY() + (ry * this.speed));
-	}
+		env.removeAgent(this);
 
-	@Override
-	public void interact(AgentsEnvironment env) {
-		this.move(env);
+		double rx = getRx();
+		double ry = getRy();
+
+		setX(getX() + (rx * speed));
+		setY(getY() + (ry * speed));
+
+		env.addAgent(this);
 	}
 }

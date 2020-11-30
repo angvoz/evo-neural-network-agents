@@ -15,12 +15,17 @@
  ******************************************************************************/
 package com.lagodiuk.agent;
 
+import java.util.Random;
+
 public class MovingFood extends MovingAgent implements IFood {
 	private static double RADIUS = 2;
 	private static int ENERGY = 1;
+	public static final double MAX_SPEED = 3;
 
 	public MovingFood(double x, double y, double angle, double speed) {
 		super(x, y, angle, speed);
+
+		setEnergy(ENERGY);
 	}
 
 	@Override
@@ -29,7 +34,13 @@ public class MovingFood extends MovingAgent implements IFood {
 	}
 
 	@Override
-	public int getEnergy() {
-		return ENERGY;
+	public MovingFood reproduce(AgentsEnvironment env) {
+		Random random = new Random();
+		double angle = random.nextDouble() * 2*Math.PI;
+		double speed = random.nextDouble() * MAX_SPEED;
+		MovingFood newFood = new MovingFood(getX(), getY(), angle, speed);
+		env.addAgent(newFood);
+		return newFood;
 	}
+
 }

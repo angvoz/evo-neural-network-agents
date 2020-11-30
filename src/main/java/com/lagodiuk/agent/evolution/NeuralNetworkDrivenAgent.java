@@ -29,24 +29,17 @@ import com.lagodiuk.nn.genetic.OptimizableNeuralNetwork;
 
 public class NeuralNetworkDrivenAgent extends FertileAgent {
 	private static final double RADIUS = 5;
-
-	private static final double maxDeltaAngle = 1;
-
-	protected static final double maxAgentsDistance = 5;
-
+	private static final double MAX_DELTA_ANGLE = 1;
+	protected static final double MAX_AGENTS_DISTANCE = 5;
 	private static final double AGENT = -10;
-
 	private static final double EMPTY = 0;
-
 	private static final double FOOD = 10;
-
 	private static final int MUTATE_CHANCE_NEWBORN = 10;
 
 	private volatile NeuralNetwork brain;
 
 	private static volatile long countMutation = 0;
-
-	private int generation;
+	private int generation = 0;
 
 	private Random random = new Random();
 
@@ -134,7 +127,7 @@ public class NeuralNetworkDrivenAgent extends FertileAgent {
 
 		// Find nearest agent
 		FertileAgent nearestAgent = null;
-		double nearestAgentDist = maxAgentsDistance;
+		double nearestAgentDist = MAX_AGENTS_DISTANCE;
 
 		for (FertileAgent currAgent : environment.getFishes()) {
 			// agent can see only ahead
@@ -223,9 +216,9 @@ public class NeuralNetworkDrivenAgent extends FertileAgent {
 
 	private double normalizeDeltaAngle(double angle) {
 		double abs = Math.abs(angle);
-		if (abs > maxDeltaAngle) {
+		if (abs > MAX_DELTA_ANGLE) {
 			double sign = Math.signum(angle);
-			angle = sign * maxDeltaAngle;
+			angle = sign * MAX_DELTA_ANGLE;
 		}
 		return angle;
 	}
@@ -268,7 +261,7 @@ public class NeuralNetworkDrivenAgent extends FertileAgent {
 	}
 
 	@Override
-	public NeuralNetworkDrivenAgent reproduce() {
+	public NeuralNetworkDrivenAgent reproduce(AgentsEnvironment env) {
 		NeuralNetworkDrivenAgent newAgent = null;
 		if (getEnergy() >= PARENTING_ENERGY_DEFAULT) {
 			double newAngle = random.nextDouble();
@@ -278,6 +271,7 @@ public class NeuralNetworkDrivenAgent extends FertileAgent {
 			newAgent.setBrain(brain);
 			newAgent.mutate(MUTATE_CHANCE_NEWBORN);
 			setEnergy(getEnergy() - newAgent.getEnergy());
+			env.addAgent(newAgent);
 		}
 		return newAgent;
 	}
