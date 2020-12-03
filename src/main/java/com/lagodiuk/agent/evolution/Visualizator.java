@@ -25,6 +25,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.geom.Arc2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
@@ -45,6 +46,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import com.lagodiuk.agent.AbstractAgent;
 import com.lagodiuk.agent.AgentsEnvironment;
 import com.lagodiuk.agent.FertileAgent;
 import com.lagodiuk.agent.IAgent;
@@ -72,6 +74,46 @@ public class Visualizator {
 	private int timeBetweenFrames = 5;
 
 	private static NeuralNetworkDrivenAgent selectedAgent;
+
+	abstract private class Replicator {
+		abstract protected void action(int x, int y);
+
+		private void replicate(AbstractAgent agent, int distanceFromBorder) {
+			int x = (int) agent.getX();
+			int y = (int) agent.getY();
+
+			int envWidth = environment.getWidth();
+			int envHeight = environment.getHeight();
+
+			action(x, y);
+			// Replicate on the other sides of the boundaries
+			if (x - distanceFromBorder < 0) {
+				action(x + envWidth, y);
+			}
+			if (x + distanceFromBorder > envWidth) {
+				action(x - envWidth, y);
+			}
+			if (y - distanceFromBorder < 0) {
+				action(x, y + envHeight);
+			}
+			if (y + distanceFromBorder > envHeight) {
+				action(x, y - envHeight);
+			}
+			if (x - distanceFromBorder < 0 && y - distanceFromBorder < 0) {
+				action(x + envWidth, y + envHeight);
+			}
+
+			if (x + distanceFromBorder > envWidth && y - distanceFromBorder < 0) {
+				action(x - envWidth, y + envHeight);
+			}
+			if (x - distanceFromBorder < 0 && y + distanceFromBorder > envHeight) {
+				action(x + envWidth, y - envHeight);
+			}
+			if (x + distanceFromBorder > envWidth && y + distanceFromBorder > envHeight) {
+				action(x - envWidth, y - envHeight);
+			}
+		}
+	}
 
 	public Visualizator(AgentsEnvironment environment) {
 		this.environment = environment;
@@ -363,6 +405,14 @@ public class Visualizator {
 		return colorFood;
 	}
 
+	private Color getColorRadar(FertileAgent agent) {
+		Color colorRadar = null;
+		if (agent == selectedAgent) {
+			colorRadar = new Color(0x4c, 0xaf, 0x50);
+		}
+		return colorRadar;
+	}
+
 	private Color getColorBody(FertileAgent agent) {
 		Color colorBody = Color.GRAY;
 		if (agent.getEnergy() <= 0) {
@@ -434,6 +484,25 @@ public class Visualizator {
 
 			canvas.fillOval(x - foodRadius, y - foodRadius, foodRadius * 2, foodRadius * 2);
 		}
+	}
+
+	private void drawRadar(Graphics2D canvas, FertileAgent agent) {
+		Replicator radarReplicator = new Replicator() {
+			Color colorRadar = getColorRadar(agent);
+
+			@Override
+			public void action(int x, int y) {
+				canvas.setColor(colorRadar);
+				double diameterArc = NeuralNetworkDrivenAgent.EYESIGHT_DISTANCE * 2;
+				double xArc = x - diameterArc / 2;
+				double yArc = y - diameterArc / 2;
+				int startingAngleArc = -(int) ((agent.getAngle() + NeuralNetworkDrivenAgent.EYSIGHT_ANGLE) * 180 / Math.PI);
+				int extentAngleArc = (int) (NeuralNetworkDrivenAgent.EYSIGHT_ANGLE * 2 * 180 / Math.PI);
+				Arc2D arc = new Arc2D.Double(xArc, yArc, diameterArc, diameterArc, startingAngleArc, extentAngleArc, Arc2D.PIE);
+				canvas.fill(arc);
+			}
+		};
+		radarReplicator.replicate(agent, (int) NeuralNetworkDrivenAgent.EYESIGHT_DISTANCE);
 	}
 
 	private void markAgent(Graphics2D canvas, MovingAgent agent, int x, int y, Color color) {
@@ -512,46 +581,19 @@ public class Visualizator {
 		Color colorBodyOutline = colorBodyOutline(agent);
 		Color colorFlag = getColorFlag(agent);
 
-		int x = (int) agent.getX();
-		int y = (int) agent.getY();
-
-		int envWidth = environment.getWidth();
-		int envHeight = environment.getHeight();
-		int distanceFromBorder = (int) NeuralNetworkDrivenAgent.EYESIGHT_DISTANCE;
-
-		replicateAgentAt(canvas, agent, x, y, colorBody, colorBodyOutline, colorFlag);
-
-		// Replicate agent on the other sides of the boundaries
-		if (x - distanceFromBorder < 0) {
-			replicateAgentAt(canvas, agent, x + envWidth, y, colorBody, colorBodyOutline, colorFlag);
-		}
-		if (x + distanceFromBorder > envWidth) {
-			replicateAgentAt(canvas, agent, x - envWidth, y, colorBody, colorBodyOutline, colorFlag);
-		}
-		if (y - distanceFromBorder < 0) {
-			replicateAgentAt(canvas, agent, x, y + envHeight, colorBody, colorBodyOutline, colorFlag);
-		}
-		if (y + distanceFromBorder > envHeight) {
-			replicateAgentAt(canvas, agent, x, y - envHeight, colorBody, colorBodyOutline, colorFlag);
-		}
-		if (x - distanceFromBorder < 0 && y - distanceFromBorder < 0) {
-			replicateAgentAt(canvas, agent, x + envWidth, y + envHeight, colorBody, colorBodyOutline, colorFlag);
-		}
-
-		if (x + distanceFromBorder > envWidth && y - distanceFromBorder < 0) {
-			replicateAgentAt(canvas, agent, x - envWidth, y + envHeight, colorBody, colorBodyOutline, colorFlag);
-		}
-		if (x - distanceFromBorder < 0 && y + distanceFromBorder > envHeight) {
-			replicateAgentAt(canvas, agent, x + envWidth, y - envHeight, colorBody, colorBodyOutline, colorFlag);
-		}
-		if (x + distanceFromBorder > envWidth && y + distanceFromBorder > envHeight) {
-			replicateAgentAt(canvas, agent, x - envWidth, y - envHeight, colorBody, colorBodyOutline, colorFlag);
-		}
+		Replicator agentReplicator = new Replicator() {
+			@Override
+			public void action(int x, int y) {
+				replicateAgentAt(canvas, agent, x, y, colorBody, colorBodyOutline, colorFlag);
+			}
+		};
+		int distanceFromBorder = (int) (agent.getRadius() * 3);
+		agentReplicator.replicate(agent, distanceFromBorder);
 
 		if (colorFlag != null) {
 			if (agent instanceof NeuralNetworkDrivenAgent) {
 				for (IFood food : environment.getFood()) {
-					if (((NeuralNetworkDrivenAgent) agent).inSight(food)) {
+					if (((NeuralNetworkDrivenAgent) agent).inSight(food, environment)) {
 						markFood(canvas, food, colorFlag);
 					}
 				}
@@ -561,12 +603,14 @@ public class Visualizator {
 
 	private void drawAgents(Graphics2D canvas) {
 		List<FertileAgent> agents = environment.getFishes();
+		if (agents.contains(selectedAgent)) {
+			drawRadar(canvas, selectedAgent);
+		}
 		for (FertileAgent agent : agents) {
 			if (agent != selectedAgent) {
 				drawAgent(canvas, agent);
 			}
 		}
-		// Draw separately to mark food over last generation marks
 		if (agents.contains(selectedAgent)) {
 			drawAgent(canvas, selectedAgent);
 		} else {

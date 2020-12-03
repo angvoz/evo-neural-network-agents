@@ -127,7 +127,7 @@ public class NeuralNetworkDrivenAgent extends FertileAgent {
 
 		for (IFood currFood : environment.getFood()) {
 			// agent can see only ahead
-			if (this.inSight(currFood)) {
+			if (this.inSight(currFood, environment)) {
 				double currFoodDist = this.distanceTo(currFood);
 				if ((nearestFood == null) || (currFoodDist <= nearestFoodDist)) {
 					nearestFood = currFood;
@@ -142,7 +142,7 @@ public class NeuralNetworkDrivenAgent extends FertileAgent {
 
 		for (FertileAgent currAgent : environment.getFishes()) {
 			// agent can see only ahead
-			if ((this != currAgent) && (this.inSight(currAgent))) {
+			if ((this != currAgent) && (this.inSight(currAgent, environment))) {
 				double currAgentDist = this.distanceTo(currAgent);
 				if (currAgentDist <= nearestAgentDist) {
 					nearestAgent = currAgent;
@@ -199,14 +199,55 @@ public class NeuralNetworkDrivenAgent extends FertileAgent {
 		return nnInputs;
 	}
 
-	public boolean inSight(IAgent agent) {
-		double vx1 = agent.getX() - this.getX();
-		double vy1 = agent.getY() - this.getY();
-		if (vx1*vx1 + vy1*vy1 > EYESIGHT_DISTANCE*EYESIGHT_DISTANCE) {
+	private boolean inSightInternal(double x, double y) {
+		double vx1 = x - this.getX();
+		double vy1 = y - this.getY();
+		if (vx1 > EYESIGHT_DISTANCE || vy1 > EYESIGHT_DISTANCE
+				|| vx1 * vx1 + vy1 * vy1 > EYESIGHT_DISTANCE * EYESIGHT_DISTANCE) {
 			return false;
 		}
-		double crossProduct = this.cosTeta(this.getRx(), this.getRy(), agent.getX() - this.getX(), agent.getY() - this.getY());
-		return (crossProduct > Math.cos(EYSIGHT_ANGLE));
+		double crossProduct = this.cosTeta(this.getRx(), this.getRy(), x - this.getX(), y - this.getY());
+		boolean result = crossProduct > Math.cos(EYSIGHT_ANGLE);
+		return result;
+	}
+
+	public boolean inSight(IAgent agent, AgentsEnvironment env) {
+		double x = agent.getX();
+		double y = agent.getY();
+		if (inSightInternal(x, y)) {
+			return true;
+		}
+
+		// Agents can move across boundaries so should also see
+		final double maxY = env.getHeight();
+		final double maxX = env.getWidth();
+		if (x < EYESIGHT_DISTANCE) {
+			x = x + maxX;
+		} else if (x > maxX - EYESIGHT_DISTANCE) {
+			x = x - maxX;
+		}
+		if (x != agent.getX()) {
+			if (inSightInternal(x, agent.getY())) {
+				return true;
+			}
+		}
+		if (y < EYESIGHT_DISTANCE) {
+			y = y + maxY;
+		} else if (y > maxY - EYESIGHT_DISTANCE) {
+			y = y - maxY;
+		}
+		if (y != agent.getY()) {
+			if (inSightInternal(agent.getX(), y)) {
+				return true;
+			}
+		}
+		if (x != agent.getX() && y != agent.getY()) {
+			if (inSightInternal(x, y)) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	public double distanceTo(IAgent agent) {
