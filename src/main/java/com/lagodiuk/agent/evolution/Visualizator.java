@@ -19,9 +19,10 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.util.List;
 
-import com.lagodiuk.agent.Agent;
 import com.lagodiuk.agent.AgentsEnvironment;
-import com.lagodiuk.agent.Food;
+import com.lagodiuk.agent.FertileAgent;
+import com.lagodiuk.agent.IFood;
+import com.lagodiuk.agent.MovingAgent;
 
 public class Visualizator {
 	private AgentsEnvironment environment;
@@ -35,7 +36,7 @@ public class Visualizator {
 		return colorFood;
 	}
 
-	private Color getColorBody(Agent agent) {
+	private Color getColorBody(FertileAgent agent) {
 		Color colorBody = Color.GRAY;
 		if (agent.getEnergy() <= 0) {
 			colorBody = Color.BLACK;
@@ -47,7 +48,7 @@ public class Visualizator {
 		return colorBody;
 	}
 
-	private Color colorBodyOutline(Agent agent) {
+	private Color colorBodyOutline(FertileAgent agent) {
 		Color colorBodyOutline = Color.GRAY;
 		if (agent.getEnergy() <= 0) {
 			colorBodyOutline = Color.WHITE;
@@ -64,7 +65,7 @@ public class Visualizator {
 		return colorBodyOutline;
 	}
 
-	private Color getColorFlag(Agent agent) {
+	private Color getColorFlag(FertileAgent agent) {
 		Color colorFlag = null;
 		if (agent instanceof NeuralNetworkDrivenAgent) {
 			final int maxGeneration = environment.getLongestGeneration();
@@ -79,7 +80,7 @@ public class Visualizator {
 	private void drawFood(Graphics2D canvas) {
 		Color colorFood = getColorFood();
 		canvas.setColor(colorFood);
-		for (Food food : environment.getFood()) {
+		for (IFood food : environment.getFood()) {
 			int x = (int) food.getX();
 			int y = (int) food.getY();
 			int foodRadius = (int) food.getRadius();
@@ -88,7 +89,7 @@ public class Visualizator {
 		}
 	}
 
-	private void markAgent(Graphics2D canvas, Agent agent, int x, int y, Color color) {
+	private void markAgent(Graphics2D canvas, MovingAgent agent, int x, int y, Color color) {
 		int agentRadius = (int) agent.getRadius();
 		canvas.setColor(color);
 		{
@@ -117,7 +118,7 @@ public class Visualizator {
 		}
 	}
 
-	private void drawAgentBody(Graphics2D canvas, Agent agent, int x, int y, Color colorBody, Color colorBodyOutline) {
+	private void drawAgentBody(Graphics2D canvas, FertileAgent agent, int x, int y, Color colorBody, Color colorBodyOutline) {
 		int agentRadius = (int) agent.getRadius();
 		canvas.setColor(colorBody);
 		canvas.fillOval(x - agentRadius, y - agentRadius, agentRadius * 2, agentRadius * 2);
@@ -125,7 +126,7 @@ public class Visualizator {
 		canvas.drawOval(x - agentRadius, y - agentRadius, agentRadius * 2, agentRadius * 2);
 	}
 
-	private void drawAgentEye(Graphics2D canvas, Agent agent, double theta) {
+	private void drawAgentEye(Graphics2D canvas, MovingAgent agent, double theta) {
 		int radiusEyeBase = (int) agent.getRadius() - 1;
 		int radiusEye = 1;
 		int diameterEye = radiusEye * 2;
@@ -138,7 +139,7 @@ public class Visualizator {
 		canvas.drawOval(x, y, diameterEye, diameterEye);
 	}
 
-	private void drawAgentTail(Graphics2D canvas, Agent agent, int x, int y) {
+	private void drawAgentTail(Graphics2D canvas, FertileAgent agent, int x, int y) {
 		int signSpeed = -(int) Math.signum(agent.getSpeed());
 		double agentRadius = agent.getRadius();
 		int rx = (int) ((agent.getRx() * (agentRadius + 4) * signSpeed) + x);
@@ -147,7 +148,7 @@ public class Visualizator {
 		canvas.drawLine(x, y, rx, ry);
 	}
 
-	private void replicateAgentAt(Graphics2D canvas, Agent agent, int x, int y, Color colorBody, Color colorBodyOutline, Color colorFlag) {
+	private void replicateAgentAt(Graphics2D canvas, FertileAgent agent, int x, int y, Color colorBody, Color colorBodyOutline, Color colorFlag) {
 		drawAgentBody(canvas, agent, x, y, colorBody, colorBodyOutline);
 		canvas.setColor(colorBodyOutline);
 		drawAgentEye(canvas, agent, 0.3);
@@ -159,7 +160,7 @@ public class Visualizator {
 		}
 	}
 
-	private void drawAgent(Graphics2D canvas, Agent agent) {
+	private void drawAgent(Graphics2D canvas, FertileAgent agent) {
 		Color colorBody = getColorBody(agent);
 		Color colorBodyOutline = colorBodyOutline(agent);
 		Color colorFlag = getColorFlag(agent);
@@ -202,8 +203,8 @@ public class Visualizator {
 	}
 
 	private void drawAgents(Graphics2D canvas) {
-		List<Agent> agents = environment.getFishes();
-		for (Agent agent : agents) {
+		List<FertileAgent> agents = environment.getFishes();
+		for (FertileAgent agent : agents) {
 			drawAgent(canvas, agent);
 		}
 	}

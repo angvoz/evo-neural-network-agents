@@ -15,12 +15,12 @@
  ******************************************************************************/
 package com.lagodiuk.agent;
 
-public class MovingFood extends MovingAgent implements IFood {
+public class StaticFood extends AbstractAgent implements IFood {
 	private static double RADIUS = 2;
 	private static int ENERGY = 1;
 
-	public MovingFood(double x, double y, double angle, double speed) {
-		super(x, y, angle, speed);
+	public StaticFood(double x, double y) {
+		super(x, y);
 	}
 
 	@Override

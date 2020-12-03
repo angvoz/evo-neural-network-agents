@@ -15,17 +15,50 @@
  ******************************************************************************/
 package com.lagodiuk.agent;
 
-public interface AbstractAgent {
+abstract public class AbstractAgent implements IAgent {
+	private double x;
+	private double y;
 
-	void interact(AgentsEnvironment env);
+	private int energy;
 
-	double getX();
+	public AbstractAgent(double x, double y) {
+		this.x = x;
+		this.y = y;
+	}
 
-	double getY();
+	@Override
+	public double getX() {
+		return this.x;
+	}
 
-	void setX(double x);
+	@Override
+	public double getY() {
+		return this.y;
+	}
 
-	void setY(double y);
+	@Override
+	public void setX(double x) {
+		this.x = x;
+	}
 
-	double getRadius();
+	@Override
+	public void setY(double y) {
+		this.y = y;
+	}
+
+	@Override
+	public int getEnergy() {
+		return energy;
+	}
+
+	public void setEnergy(int newEnergy) {
+		if (newEnergy < 0) {
+			throw new RuntimeException("Attempt to set negative energy=" + newEnergy);
+		}
+		energy = newEnergy;
+	}
+
+	@Override
+	public void interact(AgentsEnvironment env) {
+	}
 }

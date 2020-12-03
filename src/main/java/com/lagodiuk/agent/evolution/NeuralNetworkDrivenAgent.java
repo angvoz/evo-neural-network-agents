@@ -19,17 +19,16 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 
-import com.lagodiuk.agent.AbstractAgent;
-import com.lagodiuk.agent.Agent;
 import com.lagodiuk.agent.AgentsEnvironment;
-import com.lagodiuk.agent.Food;
+import com.lagodiuk.agent.FertileAgent;
+import com.lagodiuk.agent.IAgent;
+import com.lagodiuk.agent.IFood;
 import com.lagodiuk.nn.NeuralNetwork;
 import com.lagodiuk.nn.ThresholdFunction;
 import com.lagodiuk.nn.genetic.OptimizableNeuralNetwork;
 
-public class NeuralNetworkDrivenAgent extends Agent {
-
-	private static final double maxSpeed = 4;
+public class NeuralNetworkDrivenAgent extends FertileAgent {
+	private static final double RADIUS = 5;
 
 	private static final double maxDeltaAngle = 1;
 
@@ -51,9 +50,14 @@ public class NeuralNetworkDrivenAgent extends Agent {
 
 	private Random random = new Random();
 
-	public NeuralNetworkDrivenAgent(double x, double y, double angle) {
-		super(x, y, angle);
+	public NeuralNetworkDrivenAgent(double x, double y, double angle, double speed) {
+		super(x, y, angle, speed);
 		this.generation = 0;
+	}
+
+	@Override
+	public double getRadius() {
+		return RADIUS;
 	}
 
 	/**
@@ -89,25 +93,13 @@ public class NeuralNetworkDrivenAgent extends Agent {
 		deltaSpeed = this.avoidNaNAndInfinity(deltaSpeed);
 		deltaAngle = this.avoidNaNAndInfinity(deltaAngle);
 
-		double newSpeed = this.normalizeSpeed(this.getSpeed() + deltaSpeed);
+		double newSpeed = this.getSpeed() + deltaSpeed;
 		double newAngle = this.getAngle() + this.normalizeDeltaAngle(deltaAngle);
 
 		this.setAngle(newAngle);
 		this.setSpeed(newSpeed);
 
-		if (getEnergy() > 0) {
-			for (Agent otherAgent : env.filter(Agent.class)) {
-				if (this != otherAgent && otherAgent.getEnergy() > 0) {
-					double futureDistance = this.module(otherAgent.getX() - (this.getX() + this.getRx() * this.getSpeed()), otherAgent.getY() - (this.getY() + this.getRy() * this.getSpeed()));
-					if (futureDistance < this.getRadius() + otherAgent.getRadius() + 3) {
-						collide(otherAgent);
-						break;
-					}
-				}
-			}
-		}
-
-		this.move();
+		move(env);
 	}
 
 	private double avoidNaNAndInfinity(double x) {
@@ -126,10 +118,10 @@ public class NeuralNetworkDrivenAgent extends Agent {
 
 	protected List<Double> createNnInputs(AgentsEnvironment environment) {
 		// Find nearest food
-		Food nearestFood = null;
+		IFood nearestFood = null;
 		double nearestFoodDist = Double.MAX_VALUE;
 
-		for (Food currFood : environment.filter(Food.class)) {
+		for (IFood currFood : environment.getFood()) {
 			// agent can see only ahead
 			if (this.inSight(currFood)) {
 				double currFoodDist = this.distanceTo(currFood);
@@ -141,10 +133,10 @@ public class NeuralNetworkDrivenAgent extends Agent {
 		}
 
 		// Find nearest agent
-		Agent nearestAgent = null;
+		FertileAgent nearestAgent = null;
 		double nearestAgentDist = maxAgentsDistance;
 
-		for (Agent currAgent : environment.filter(Agent.class)) {
+		for (FertileAgent currAgent : environment.getFishes()) {
 			// agent can see only ahead
 			if ((this != currAgent) && (this.inSight(currAgent))) {
 				double currAgentDist = this.distanceTo(currAgent);
@@ -203,12 +195,12 @@ public class NeuralNetworkDrivenAgent extends Agent {
 		return nnInputs;
 	}
 
-	protected boolean inSight(AbstractAgent agent) {
+	protected boolean inSight(IAgent agent) {
 		double crossProduct = this.cosTeta(this.getRx(), this.getRy(), agent.getX() - this.getX(), agent.getY() - this.getY());
 		return (crossProduct > 0);
 	}
 
-	protected double distanceTo(AbstractAgent agent) {
+	protected double distanceTo(IAgent agent) {
 		return this.module(agent.getX() - this.getX(), agent.getY() - this.getY());
 	}
 
@@ -225,21 +217,8 @@ public class NeuralNetworkDrivenAgent extends Agent {
 		return ret;
 	}
 
-	protected double module(double vx1, double vy1) {
-		return Math.sqrt((vx1 * vx1) + (vy1 * vy1));
-	}
-
 	protected double pseudoScalarProduct(double vx1, double vy1, double vx2, double vy2) {
 		return (vx1 * vy2) - (vy1 * vx2);
-	}
-
-	private double normalizeSpeed(double speed) {
-		if (speed > maxSpeed) {
-			speed = maxSpeed;
-		} else if (speed < 0) {
-			speed = 0;
-		}
-		return speed;
 	}
 
 	private double normalizeDeltaAngle(double angle) {
@@ -275,29 +254,6 @@ public class NeuralNetworkDrivenAgent extends Agent {
 		return nn;
 	}
 
-	private void collide(Agent otherAgent) {
-		// Check if the agent moves towards the other one (angle less than 90 degree)
-		double ux = otherAgent.getX() - this.getX();
-		double uy = otherAgent.getY() - this.getY();
-		double vx = this.getRx();
-		double vy = this.getRy();
-		double d = ux * vx + uy * vy;
-		if (d > 0) {
-			// if less than 90 degree move the agent in opposite direction
-			double newAngle = Math.atan2(uy, ux) + Math.PI / 2;
-			this.setAngle(newAngle);
-			// if the other agent not moving move it
-			if (otherAgent.getSpeed() == 0) {
-				otherAgent.setAngle(newAngle + Math.PI);
-				otherAgent.setSpeed(maxSpeed);
-				otherAgent.move();
-			}
-			if (this.getSpeed() == 0) {
-				this.setSpeed(maxSpeed);
-			}
-		}
-	}
-
 	private void mutate(int mutateChance) {
 		if (brain instanceof OptimizableNeuralNetwork && random.nextInt() % mutateChance == 0) {
 			countMutation++;
@@ -314,9 +270,10 @@ public class NeuralNetworkDrivenAgent extends Agent {
 	@Override
 	public NeuralNetworkDrivenAgent reproduce() {
 		NeuralNetworkDrivenAgent newAgent = null;
-		if (getEnergy() >= REPRODUCE_ENERGY_TRIGGER) {
+		if (getEnergy() >= PARENTING_ENERGY_DEFAULT) {
 			double newAngle = random.nextDouble();
-			newAgent = new NeuralNetworkDrivenAgent(this.getX(), this.getY(), newAngle);
+			double newSpeed = 0;
+			newAgent = new NeuralNetworkDrivenAgent(this.getX(), this.getY(), newAngle, newSpeed);
 			newAgent.generation = this.generation;
 			newAgent.setBrain(brain);
 			newAgent.mutate(MUTATE_CHANCE_NEWBORN);
