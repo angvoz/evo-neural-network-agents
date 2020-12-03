@@ -128,11 +128,12 @@ public class Main {
 		int environmentWidth = 1470;
 		int environmentHeight = 850;
 		int agentsCount = 50;
-		int foodCount = 1000 - agentsCount*FertileAgent.NEWBORN_ENERGY_DEFAULT;
+		int minNumberOfAgents = 10;
+		int foodCount = 1000 - agentsCount * FertileAgent.NEWBORN_ENERGY_DEFAULT;
 
 		initializeGeneticAlgorithm(gaPopulationSize, parentalChromosomesSurviveCount, null);
 
-		initializeEnvironment(environmentWidth, environmentHeight - 11, agentsCount, foodCount);
+		initializeEnvironment(environmentWidth, environmentHeight - 11, agentsCount, foodCount, minNumberOfAgents);
 
 		initializeCanvas(environmentWidth, environmentHeight);
 
@@ -233,11 +234,11 @@ public class Main {
 		displayEnvironmentCanvas.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 	}
 
-	private static void initializeEnvironment(int environmentWidth, int environmentHeight, int agentsCount, int foodCount) {
+	private static void initializeEnvironment(int environmentWidth, int environmentHeight, int agentsCount, int foodCount, int minNumberOfAgents) {
 		environment = new AgentsEnvironment(environmentWidth, environmentHeight);
 		visualizator = new Visualizator(environment);
 
-		initializeAgents(agentsCount);
+		initializeAgents(agentsCount, minNumberOfAgents);
 		initializeFood(foodCount);
 	}
 
@@ -568,9 +569,10 @@ public class Main {
 		});
 	}
 
-	private static void initializeAgents(int agentsCount) {
+	private static void initializeAgents(int agentsCount, int minNumberOfAgents) {
 		int environmentWidth = environment.getWidth();
 		int environmentHeight = environment.getHeight();
+		environment.setMinNumberOfAgents(minNumberOfAgents);
 
 		for (int i = 0; i < agentsCount; i++) {
 			int x = random.nextInt(environmentWidth);

@@ -23,7 +23,6 @@ import com.lagodiuk.agent.evolution.NeuralNetworkDrivenAgent;
 import com.lagodiuk.nn.genetic.OptimizableNeuralNetwork;
 
 public class AgentsEnvironment {
-	public static final int ENDANGERED_SPECIES = 10;
 	public static final boolean FOOD_CELL_DIVISION = true;
 
 	private int width;
@@ -35,6 +34,7 @@ public class AgentsEnvironment {
 	private Random random = new Random();
 
 	private List<AbstractAgent> agents = new ArrayList<AbstractAgent>();
+	private int minNumberOfAgents = 10;
 
 	private List<AgentsEnvironmentObserver> listeners = new ArrayList<AgentsEnvironmentObserver>();
 
@@ -131,11 +131,11 @@ public class AgentsEnvironment {
 	}
 
 	private void addAgents() {
-		if (getFishes().size() <= ENDANGERED_SPECIES) {
+		if (getFishes().size() <= minNumberOfAgents) {
 			// Do not allow life go extinct in this simulation
 			addNewRandomFish();
 		}
-		if (getFishes().size() > ENDANGERED_SPECIES) {
+		if (getFishes().size() > minNumberOfAgents) {
 			addNewFood();
 		}
 	}
@@ -262,6 +262,10 @@ public class AgentsEnvironment {
 
 	public void setEnergyReserve(int energy) {
 		energyReserve = energy;
+	}
+
+	public void setMinNumberOfAgents(int minNumberOfAgents) {
+		this.minNumberOfAgents = minNumberOfAgents;
 	}
 
 	public int countEatenFood() {
