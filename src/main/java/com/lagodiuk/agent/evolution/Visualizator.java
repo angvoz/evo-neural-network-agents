@@ -79,7 +79,7 @@ public class Visualizator {
 	private void drawFood(Graphics2D canvas) {
 		Color colorFood = getColorFood();
 		canvas.setColor(colorFood);
-		for (Food food : environment.filter(Food.class)) {
+		for (Food food : environment.getFood()) {
 			int x = (int) food.getX();
 			int y = (int) food.getY();
 			int foodRadius = (int) food.getRadius();
@@ -202,7 +202,8 @@ public class Visualizator {
 	}
 
 	private void drawAgents(Graphics2D canvas) {
-		for (Agent agent : (List<Agent>) environment.filter(Agent.class)) {
+		List<Agent> agents = environment.getFishes();
+		for (Agent agent : agents) {
 			drawAgent(canvas, agent);
 		}
 	}

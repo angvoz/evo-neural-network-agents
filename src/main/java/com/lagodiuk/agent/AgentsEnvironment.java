@@ -18,19 +18,22 @@ package com.lagodiuk.agent;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Random;
 
 import com.lagodiuk.agent.evolution.NeuralNetworkDrivenAgent;
+import com.lagodiuk.nn.genetic.OptimizableNeuralNetwork;
 
 public class AgentsEnvironment {
+	public static final int ENDANGERED_SPECIES = 10;
+	public static final boolean FOOD_CELL_DIVISION = true;
 
 	private int width;
-
 	private int height;
-
 	private double time;
-
 	private int energyReserve;
+	private int countEatenFood;
 
+	private Random random = new Random();
 
 	private List<AbstractAgent> agents = new ArrayList<AbstractAgent>();
 
@@ -59,14 +62,139 @@ public class AgentsEnvironment {
 		return this.time;
 	}
 
+	public List<Agent> getFishes() {
+		List<Agent> fishes = new ArrayList<Agent>();
+		for (Agent agent : filter(Agent.class)) {
+			fishes.add(agent);
+		}
+		return fishes;
+	}
+
+	public List<Food> getFood() {
+		List<Food> foods = new ArrayList<Food>();
+		for (Food food : filter(Food.class)) {
+			foods.add(food);
+		}
+		return foods;
+	}
+
+	private Food createRandomFood(int width, int height) {
+		boolean staticFood = false;
+		int x = random.nextInt(width);
+		int y = random.nextInt(height);
+
+		Food food = null;
+		if (staticFood) {
+			food = new Food(x, y);
+		} else {
+			double speed = random.nextDouble() * 2;
+			double direction = random.nextDouble() * 2 * Math.PI;
+
+			food = new MovingFood(x, y, direction, speed);
+		}
+		return food;
+	}
+
+	private Food reproduceFood(Food food) {
+		double x = food.getX();
+		double y = food.getY();
+
+		double speed = random.nextDouble() * 2;
+		double direction = random.nextDouble() * 2 * Math.PI;
+		Food newFood = new MovingFood(x, y, direction, speed);
+
+		return newFood;
+	}
+
+	private void feedAgents() {
+		countEatenFood = 0;
+		for (Food food : getFood()) {
+			for (Agent fish : getFishes()) {
+				double fishRadius = fish.getRadius();
+				double deltaY = Math.abs(food.getY() - fish.getY());
+				if (deltaY < fishRadius) {
+					double deltaX = Math.abs(food.getX() - fish.getX());
+					if (deltaX < fishRadius) {
+						double distanceToFood = Math.sqrt((deltaX * deltaX) + (deltaY * deltaY));
+						if (distanceToFood < fishRadius) {
+							countEatenFood++;
+							removeAgent(food);
+							fish.eatFood(food);
+							if (fish.isPregnant()) {
+								Agent newFish = fish.reproduce();
+								addAgent(newFish);
+							}
+							break;
+						}
+					}
+				}
+			}
+		}
+	}
+
 	public synchronized void timeStep() {
-		this.time++;
+		// Move agents
 		for (AbstractAgent agent : this.getAgents()) {
 			agent.interact(this);
 			this.avoidMovingOutsideOfBounds(agent);
 		}
+
+		// Feed Agents
+		this.feedAgents();
+		growAgentsOlder();
+		if (getFishes().size() <= ENDANGERED_SPECIES) {
+			addNewRandomAgent();
+		}
+		if (getFishes().size() > ENDANGERED_SPECIES) {
+			addNewFood();
+		}
+
 		for (AgentsEnvironmentObserver l : this.listeners) {
+			// keeps score for tournaments
 			l.notify(this);
+		}
+
+		this.time++;
+	}
+
+	private void addNewFood() {
+		while (energyReserve > 0) {
+			int foodEnergy = 1;
+			List<Food> allFood = this.getFood();
+			if (FOOD_CELL_DIVISION && allFood.size() > 0) {
+				int index = random.nextInt(allFood.size());
+				Food food = reproduceFood(allFood.get(index));
+				this.addAgent(food);
+			} else {
+				Food food = createRandomFood(this.getWidth(), this.getHeight());
+				this.addAgent(food);
+			}
+			energyReserve -= foodEnergy;
+		}
+	}
+
+	private void addNewRandomAgent() {
+		// Do not allow life go extinct in this simulation
+		if (energyReserve >= Agent.STARTING_ENERGY) {
+			// Add new random agent
+			int x = random.nextInt(this.getWidth());
+			int y = random.nextInt(this.getHeight());
+			double direction = random.nextDouble() * 2 * Math.PI;
+			NeuralNetworkDrivenAgent newAgent = new NeuralNetworkDrivenAgent(x, y, direction);
+			OptimizableNeuralNetwork newBrain = NeuralNetworkDrivenAgent.randomNeuralNetworkBrain().mutate();
+			newAgent.setBrain(newBrain);
+			this.addAgent(newAgent);
+			energyReserve -= newAgent.getEnergy();
+		}
+	}
+
+	private void growAgentsOlder() {
+		for (Agent agent : getFishes()) {
+			int upkeepEnergy = agent.grow();
+			if (agent.getEnergy() <= 0) {
+				this.removeAgent(agent);
+			}
+			energyReserve += upkeepEnergy;
 		}
 	}
 
@@ -135,5 +263,9 @@ public class AgentsEnvironment {
 
 	public void setEnergyReserve(int energy) {
 		energyReserve = energy;
+	}
+
+	public int countEatenFood() {
+		return countEatenFood;
 	}
 }

@@ -39,7 +39,6 @@ import java.util.prefs.Preferences;
 
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
-import javax.swing.JCheckBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -79,8 +78,6 @@ public class Main {
 
 	private static volatile boolean staticFood = false;
 
-	private static volatile boolean regenerateFood = false;
-
 	// UI
 
 	private static JFrame appFrame;
@@ -106,8 +103,6 @@ public class Main {
 	private static JRadioButton dynamicFoodRadioButton;
 
 	private static ButtonGroup foodTypeButtonGroup;
-
-	private static JCheckBox regenerateFoodCheckbox;
 
 	private static JProgressBar progressBar;
 
@@ -152,8 +147,6 @@ public class Main {
 		initializeSaveBrainButtonFunctionality();
 
 		initializeChangingFoodTypeFunctionality();
-
-		initializeRegenerateFoodCheckboxFunctionality();
 
 		initializeResetButtonFunctionality();
 
@@ -242,16 +235,6 @@ public class Main {
 		environment = new AgentsEnvironment(environmentWidth, environmentHeight);
 		visualizator = new Visualizator(environment);
 
-		environment.addListener(new EatenFoodObserver() {
-			@Override
-			protected void addRandomPieceOfFood(AgentsEnvironment env) {
-				if (regenerateFood) {
-					Food food = createRandomFood(env.getWidth(), env.getHeight());
-					env.addAgent(food);
-				}
-			}
-		});
-
 		initializeAgents(agentsCount);
 		initializeFood(foodCount);
 	}
@@ -320,10 +303,6 @@ public class Main {
 			dynamicFoodRadioButton.setSelected(true);
 		}
 
-		regenerateFoodCheckbox = new JCheckBox("regenerate food");
-		regenerateFoodCheckbox.setSelected(regenerateFood);
-		controlsPanel.add(regenerateFoodCheckbox);
-
 		playPauseButton = new JButton("pause");
 		controlsPanel.add(playPauseButton);
 
@@ -379,15 +358,6 @@ public class Main {
 		};
 		staticFoodRadioButton.addItemListener(changingFoodTypeListener);
 		dynamicFoodRadioButton.addItemListener(changingFoodTypeListener);
-	}
-
-	public static void initializeRegenerateFoodCheckboxFunctionality() {
-		regenerateFoodCheckbox.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent arg0) {
-				regenerateFood = !regenerateFood;
-			}
-		});
 	}
 
 	private static void initializeLoadBrainButtonFunctionality() {
