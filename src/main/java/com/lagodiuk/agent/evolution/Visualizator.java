@@ -30,6 +30,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.prefs.Preferences;
@@ -39,7 +40,10 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JSlider;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 import com.lagodiuk.agent.AgentsEnvironment;
 import com.lagodiuk.agent.FertileAgent;
@@ -103,6 +107,38 @@ public class Visualizator {
 		return button;
 	}
 
+	private JSlider createSpeedSlider() {
+		// Create slider
+		final int TIME_BETWEEN_FRAMES_MIN = 0;
+		final int TIME_BETWEEN_FRAMES_MAX = 100;
+		final int TIME_BETWEEN_FRAMES_INIT = 5;
+		JSlider speedSlider = new JSlider(JSlider.HORIZONTAL, TIME_BETWEEN_FRAMES_MIN, TIME_BETWEEN_FRAMES_MAX,
+				TIME_BETWEEN_FRAMES_MAX - TIME_BETWEEN_FRAMES_INIT);
+		speedSlider.addChangeListener(new ChangeListener() {
+			@Override
+			public void stateChanged(ChangeEvent e) {
+				JSlider source = (JSlider)e.getSource();
+				if (!source.getValueIsAdjusting()) {
+					timeBetweenFrames = TIME_BETWEEN_FRAMES_MAX - source.getValue();
+					timeBetweenFrames = TIME_BETWEEN_FRAMES_MAX - source.getValue();
+				}
+	
+			}
+	
+		});
+		speedSlider.setMajorTickSpacing(TIME_BETWEEN_FRAMES_MAX / 4);
+		speedSlider.setPaintTicks(true);
+		speedSlider.setPreferredSize(new Dimension(126, 20));
+	
+		// Create the label table
+		Hashtable<Integer, JLabel> labelTable = new Hashtable<Integer, JLabel>();
+		labelTable.put(new Integer(0), new JLabel("Slow"));
+		labelTable.put(new Integer(TIME_BETWEEN_FRAMES_MAX), new JLabel("Fast"));
+		speedSlider.setLabelTable(labelTable);
+		speedSlider.setPaintLabels(true);
+		return speedSlider;
+	}
+
 	private void initializeUI(int environmentWidth, int environmentHeight) {
 		int buttonWidth = 100;
 		int buttonHeight = 40;
@@ -129,7 +165,6 @@ public class Visualizator {
 		appFrame.add(controlsPanel, BorderLayout.EAST);
 		controlsPanel.setLayout(new GridLayout(buttonRows, 1, horButtonGap, verButtonGap));
 
-		playPauseButton = addNewButton(controlsPanel, play ? "Pause" : "Start", buttonSize, true);
 		saveButton = addNewButton(controlsPanel, "Save", buttonSize, !play);
 		loadButton = addNewButton(controlsPanel, "Load", buttonSize, !play);
 
@@ -140,6 +175,10 @@ public class Visualizator {
 		prefs = Preferences.userNodeForPackage(Main.class);
 		String saveDirPath = prefs.get(PREFS_KEY_SAVE_DIRECTORY, "");
 		fileChooser = new JFileChooser(new File(saveDirPath));
+
+		JSlider speedSlider = createSpeedSlider();
+		controlsPanel.add(speedSlider, java.awt.BorderLayout.EAST);
+		playPauseButton = addNewButton(controlsPanel, play ? "Pause" : "Start", buttonSize, true);
 	}
 
 	private void initializeLoadFunctionality() {
