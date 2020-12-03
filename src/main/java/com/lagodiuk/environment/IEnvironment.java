@@ -11,6 +11,8 @@ public interface IEnvironment {
 	int getHeight();
 	double getTime();
 
+	double squareOfDistance(AbstractAgent agent1, AbstractAgent agent2);
+
 	public void addEnergyReserve(int energy);
 
 	public void initialize(int agentsDensity, int foodDensity);

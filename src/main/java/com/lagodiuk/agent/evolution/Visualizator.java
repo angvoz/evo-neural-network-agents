@@ -458,7 +458,7 @@ public class Visualizator {
 		return colorFlag;
 	}
 
-	private void markFood(Graphics2D canvas, IFood food, Color color) {
+	private void markFood(Graphics2D canvas, AbstractAgent food, Color color) {
 		if (food != null) {
 			canvas.setColor(color);
 			// Small triangle flag
@@ -594,10 +594,8 @@ public class Visualizator {
 
 		if (colorFlag != null) {
 			if (agent instanceof NeuralNetworkDrivenAgent) {
-				for (IFood food : environment.getFood()) {
-					if (((NeuralNetworkDrivenAgent) agent).inSight(food, environment)) {
-						markFood(canvas, food, colorFlag);
-					}
+				for (AbstractAgent food : ((NeuralNetworkDrivenAgent) agent).getFoodInSight()) {
+					markFood(canvas, food, colorFlag);
 				}
 			}
 		}

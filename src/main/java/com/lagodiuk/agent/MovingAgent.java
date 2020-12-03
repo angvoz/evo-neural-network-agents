@@ -15,6 +15,10 @@
  ******************************************************************************/
 package com.lagodiuk.agent;
 
+import java.util.Comparator;
+
+import javax.xml.bind.annotation.XmlTransient;
+
 import com.lagodiuk.environment.IEnvironment;
 
 public abstract class MovingAgent extends AbstractAgent {
@@ -25,6 +29,22 @@ public abstract class MovingAgent extends AbstractAgent {
 
 	private double angle;
 	private double speed;
+
+	@XmlTransient
+	protected SortByDistance sorterByDistance;
+
+	private class SortByDistance implements Comparator<AbstractAgent> {
+		private IEnvironment environment;
+
+		public SortByDistance(IEnvironment env) {
+			environment = env;
+		}
+
+		@Override
+		public int compare(AbstractAgent a, AbstractAgent b) {
+			return (int) Math.signum(environment.squareOfDistance(MovingAgent.this, a) - environment.squareOfDistance(MovingAgent.this, b));
+		}
+	}
 
 	protected MovingAgent() {
 	}
@@ -124,6 +144,15 @@ public abstract class MovingAgent extends AbstractAgent {
 		setY(getY() + (ry * speed));
 
 		env.addAgent(this);
+	}
+
+	@Override
+	public synchronized void evaluate(IEnvironment env) {
+		super.evaluate(env);
+
+		if (sorterByDistance == null) {
+			sorterByDistance = new SortByDistance(env);
+		}
 	}
 
 	@Override

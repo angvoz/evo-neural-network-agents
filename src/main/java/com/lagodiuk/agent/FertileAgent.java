@@ -15,7 +15,11 @@
  ******************************************************************************/
 package com.lagodiuk.agent;
 
+import java.util.SortedSet;
+import java.util.TreeSet;
+
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 import com.lagodiuk.environment.IEnvironment;
 
@@ -29,6 +33,9 @@ abstract public class FertileAgent extends MovingAgent {
 	private int parentPostBirthEnergy = PARENT_POSTBIRTH_ENERGY_DEFAULT;
 	private int newbornEnergy = NEWBORN_ENERGY_DEFAULT;
 
+	@XmlTransient
+	private SortedSet<AbstractAgent> foodInReach = null;
+
 	protected FertileAgent() {
 	}
 
@@ -40,17 +47,25 @@ abstract public class FertileAgent extends MovingAgent {
 	}
 
 	private void feed(IEnvironment env) {
-		double fishRadius = getRadius();
-		for (IFood food : env.getFood()) {
-			double deltaY = Math.abs(food.getY() - getY());
-			if (deltaY < fishRadius) {
-				double deltaX = Math.abs(food.getX() - getX());
-				if (deltaX < fishRadius) {
-					double distanceToFood = Math.sqrt((deltaX * deltaX) + (deltaY * deltaY));
-					if (distanceToFood < fishRadius) {
-						feed(food);
-						break;
-					}
+		for (AbstractAgent food : foodInReach) {
+			if (food.isAlive()) {
+				feed((IFood) food);
+				break;
+			}
+		}
+	}
+
+	@Override
+	public synchronized void evaluate(IEnvironment env) {
+		super.evaluate(env);
+
+		final double fishRadius = getRadius();
+		foodInReach = new TreeSet<AbstractAgent>(sorterByDistance);
+		for (AbstractAgent agent : env.getAgents()) {
+			if (agent.isAlive() && agent instanceof IFood) {
+				double distanceSquare = env.squareOfDistance(this, agent);
+				if (distanceSquare < fishRadius * fishRadius) {
+					foodInReach.add(agent);
 				}
 			}
 		}

@@ -96,6 +96,21 @@ public class Environment implements IEnvironment {
 		return this.height;
 	}
 
+	private double distanceOverBoundary(double x1, double x2, int boundary) {
+		double vx1 = Math.abs(x1 - x2);
+		double vx2 = Math.abs(x1 - x2 + boundary);
+		double vx3 = Math.abs(x1 - x2 - boundary);
+		double vx = Math.min(vx1, Math.min(vx2, vx3));
+		return vx;
+	}
+
+	@Override
+	public double squareOfDistance(AbstractAgent agent1, AbstractAgent agent2) {
+		double vx = distanceOverBoundary(agent1.getX(), agent2.getX(), width);
+		double vy = distanceOverBoundary(agent1.getY(), agent2.getY(), height);
+		return (vx * vx) + (vy * vy);
+	}
+
 	@Override
 	public double getTime() {
 		return this.time;

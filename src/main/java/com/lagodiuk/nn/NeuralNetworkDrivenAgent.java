@@ -18,10 +18,13 @@ package com.lagodiuk.nn;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlTransient;
 
+import com.lagodiuk.agent.AbstractAgent;
 import com.lagodiuk.agent.FertileAgent;
 import com.lagodiuk.agent.IAgent;
 import com.lagodiuk.agent.IFood;
@@ -42,6 +45,10 @@ public class NeuralNetworkDrivenAgent extends FertileAgent {
 	private volatile NeuralNetwork brain;
 	@XmlElement
 	private int generation = 0;
+	@XmlTransient
+	private SortedSet<AbstractAgent> agentsInSight = null;
+	@XmlTransient
+	private SortedSet<AbstractAgent> foodInSight = null;
 
 	private static volatile long countMutation = 0;
 
@@ -69,6 +76,28 @@ public class NeuralNetworkDrivenAgent extends FertileAgent {
 	 */
 	public synchronized void setBrain(NeuralNetwork brain) {
 		this.brain = brain;
+	}
+
+	public SortedSet<AbstractAgent> getFoodInSight() {
+		return foodInSight;
+	}
+
+	@Override
+	public synchronized void evaluate(IEnvironment env) {
+		super.evaluate(env);
+
+		agentsInSight = new TreeSet<AbstractAgent>(sorterByDistance);
+		foodInSight = new TreeSet<AbstractAgent>(sorterByDistance);
+		for (IAgent iagent : env.getAgents()) {
+			AbstractAgent agent = (AbstractAgent) iagent;
+			if (agent.isAlive() && inSight(agent, env)) {
+				if (agent instanceof IFood) {
+					foodInSight.add(agent);
+				} else {
+					agentsInSight.add(agent);
+				}
+			}
+		}
 	}
 
 	/**
@@ -121,36 +150,6 @@ public class NeuralNetworkDrivenAgent extends FertileAgent {
 	}
 
 	protected List<Double> createNnInputs(IEnvironment environment) {
-		// Find nearest food
-		IFood nearestFood = null;
-		double nearestFoodDist = Double.MAX_VALUE;
-
-		for (IFood currFood : environment.getFood()) {
-			// agent can see only ahead
-			if (this.inSight(currFood, environment)) {
-				double currFoodDist = this.distanceTo(currFood);
-				if ((nearestFood == null) || (currFoodDist <= nearestFoodDist)) {
-					nearestFood = currFood;
-					nearestFoodDist = currFoodDist;
-				}
-			}
-		}
-
-		// Find nearest agent
-		FertileAgent nearestAgent = null;
-		double nearestAgentDist = MAX_AGENTS_DISTANCE;
-
-		for (FertileAgent currAgent : environment.getFishes()) {
-			// agent can see only ahead
-			if ((this != currAgent) && (this.inSight(currAgent, environment))) {
-				double currAgentDist = this.distanceTo(currAgent);
-				if (currAgentDist <= nearestAgentDist) {
-					nearestAgent = currAgent;
-					nearestAgentDist = currAgentDist;
-				}
-			}
-		}
-
 		List<Double> nnInputs = new LinkedList<Double>();
 		nnInputs.add((double) getEnergy());
 
@@ -160,7 +159,13 @@ public class NeuralNetworkDrivenAgent extends FertileAgent {
 		double x = this.getX();
 		double y = this.getY();
 
+		AbstractAgent nearestFood = null;
+		if (!foodInSight.isEmpty()) {
+			nearestFood = foodInSight.first();
+		}
 		if (nearestFood != null) {
+			double nearestFoodDistanceInput = environment.squareOfDistance(this, nearestFood);
+
 			double foodDirectionVectorX = nearestFood.getX() - x;
 			double foodDirectionVectorY = nearestFood.getY() - y;
 
@@ -170,7 +175,7 @@ public class NeuralNetworkDrivenAgent extends FertileAgent {
 							* this.cosTeta(rx, ry, foodDirectionVectorX, foodDirectionVectorY);
 
 			nnInputs.add(FOOD);
-			nnInputs.add(nearestFoodDist);
+			nnInputs.add(nearestFoodDistanceInput);
 			nnInputs.add(foodDirectionCosTeta);
 
 		} else {
@@ -179,7 +184,12 @@ public class NeuralNetworkDrivenAgent extends FertileAgent {
 			nnInputs.add(0.0);
 		}
 
+		AbstractAgent nearestAgent = null;
+		if (!agentsInSight.isEmpty()) {
+			nearestAgent = agentsInSight.first();
+		}
 		if (nearestAgent != null) {
+			double nearestAgentDistanceInput = environment.squareOfDistance(this, nearestAgent);
 			double agentDirectionVectorX = nearestAgent.getX() - x;
 			double agentDirectionVectorY = nearestAgent.getY() - y;
 
@@ -189,7 +199,7 @@ public class NeuralNetworkDrivenAgent extends FertileAgent {
 							* this.cosTeta(rx, ry, agentDirectionVectorX, agentDirectionVectorY);
 
 			nnInputs.add(AGENT);
-			nnInputs.add(nearestAgentDist);
+			nnInputs.add(nearestAgentDistanceInput);
 			nnInputs.add(agentDirectionCosTeta);
 
 		} else {
@@ -253,10 +263,6 @@ public class NeuralNetworkDrivenAgent extends FertileAgent {
 		}
 
 		return false;
-	}
-
-	public double distanceTo(IAgent agent) {
-		return this.module(agent.getX() - this.getX(), agent.getY() - this.getY());
 	}
 
 	protected double cosTeta(double vx1, double vy1, double vx2, double vy2) {
