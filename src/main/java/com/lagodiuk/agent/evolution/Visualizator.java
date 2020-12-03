@@ -78,6 +78,24 @@ public class Visualizator {
 		return colorFlag;
 	}
 
+	private void markFood(Graphics2D canvas, IFood food, Color color) {
+		if (food != null) {
+			canvas.setColor(color);
+			// Small triangle flag
+			int x0 = (int) food.getX();
+			int y0 = (int) food.getY() - (int)food.getRadius()*2 - 1;
+			int x1 = x0;
+			int y1 = y0 - 8;
+			int x2 = x0 + 6;
+			int y2 = y0 - 6;
+			int x3 = x0;
+			int y3 = y0 - 4;
+			canvas.drawLine(x0, y0, x1, y1);
+			canvas.drawLine(x1, y1, x2, y2);
+			canvas.drawLine(x3, y3, x2, y2);
+		}
+	}
+
 	private void drawFood(Graphics2D canvas) {
 		Color colorFood = getColorFood();
 		canvas.setColor(colorFood);
@@ -171,7 +189,7 @@ public class Visualizator {
 
 		int envWidth = environment.getWidth();
 		int envHeight = environment.getHeight();
-		int distanceFromBorder = (int) agent.getRadius();
+		int distanceFromBorder = (int) NeuralNetworkDrivenAgent.EYESIGHT_DISTANCE;
 
 		replicateAgentAt(canvas, agent, x, y, colorBody, colorBodyOutline, colorFlag);
 
@@ -200,6 +218,16 @@ public class Visualizator {
 		}
 		if (x + distanceFromBorder > envWidth && y + distanceFromBorder > envHeight) {
 			replicateAgentAt(canvas, agent, x - envWidth, y - envHeight, colorBody, colorBodyOutline, colorFlag);
+		}
+
+		if (colorFlag != null) {
+			if (agent instanceof NeuralNetworkDrivenAgent) {
+				for (IFood food : environment.getFood()) {
+					if (((NeuralNetworkDrivenAgent) agent).inSight(food)) {
+						markFood(canvas, food, colorFlag);
+					}
+				}
+			}
 		}
 	}
 

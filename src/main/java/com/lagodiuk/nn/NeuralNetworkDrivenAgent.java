@@ -30,6 +30,8 @@ import com.lagodiuk.nn.genetic.OptimizableNeuralNetwork;
 
 public class NeuralNetworkDrivenAgent extends FertileAgent {
 	private static final double RADIUS = 5;
+	public static final double EYSIGHT_ANGLE = Math.PI / 4;
+	public static final double EYESIGHT_DISTANCE = 100;
 	private static final double MAX_DELTA_ANGLE = 1;
 	protected static final double MAX_AGENTS_DISTANCE = 5;
 	private static final double AGENT = -10;
@@ -198,8 +200,13 @@ public class NeuralNetworkDrivenAgent extends FertileAgent {
 	}
 
 	public boolean inSight(IAgent agent) {
+		double vx1 = agent.getX() - this.getX();
+		double vy1 = agent.getY() - this.getY();
+		if (vx1*vx1 + vy1*vy1 > EYESIGHT_DISTANCE*EYESIGHT_DISTANCE) {
+			return false;
+		}
 		double crossProduct = this.cosTeta(this.getRx(), this.getRy(), agent.getX() - this.getX(), agent.getY() - this.getY());
-		return (crossProduct > 0);
+		return (crossProduct > Math.cos(EYSIGHT_ANGLE));
 	}
 
 	public double distanceTo(IAgent agent) {
