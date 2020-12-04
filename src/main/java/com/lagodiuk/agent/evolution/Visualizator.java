@@ -69,6 +69,8 @@ public class Visualizator {
 	volatile boolean play = true;
 	private int timeBetweenFrames = 5;
 
+	private static NeuralNetworkDrivenAgent selectedAgent;
+
 	public Visualizator(AgentsEnvironment environment) {
 		this.environment = environment;
 	}
@@ -214,7 +216,9 @@ public class Visualizator {
 				int x = click.getX();
 				int y = click.getY();
 
-				if (SwingUtilities.isRightMouseButton(click)) {
+				if (SwingUtilities.isLeftMouseButton(click)) {
+					setSelectedAgent(x, y);
+				} else if (SwingUtilities.isRightMouseButton(click)) {
 					environment.createRandomFood(x, y);
 				}
 			}
@@ -285,9 +289,41 @@ public class Visualizator {
 							+ biggestGenerationStr + "/" + longestGeneration + "(" + generationCountMap.get(longestGeneration)
 							+ " fish)";
 		}
+		String selectedStatus = "";
+		if (selectedAgent != null) {
+			selectedStatus = ",  Selected: energy=" + selectedAgent.getEnergy()
+					+ ", generation=" + selectedAgent.getGeneration();
+		}
 		statusBar.setText("Time: " + (int) env.getTime() + ",   Energy Total: " + countEnergy + ",   Energy Reserve: "
 				+ energyReserve + ",   Food: " + countFood + ",   Fishes: " + countFishes + ",   Mutations: "
-				+ NeuralNetworkDrivenAgent.getMutationCount() + generationStatus);
+				+ NeuralNetworkDrivenAgent.getMutationCount() + generationStatus + selectedStatus);
+	}
+
+	public NeuralNetworkDrivenAgent getSelectedAgent() {
+		return selectedAgent;
+	}
+
+	public void setSelectedAgent(double x, double y) {
+		double min = Double.MAX_VALUE;
+		NeuralNetworkDrivenAgent closestAgent = null;
+		for (IAgent agent : getEnvironment().getAgents()) {
+			if (agent instanceof NeuralNetworkDrivenAgent) {
+				double dx = x - agent.getX();
+				double dy = y - agent.getY();
+				double distFactor = dx * dx + dy * dy;
+				if (distFactor < min) {
+					min = distFactor;
+					closestAgent = (NeuralNetworkDrivenAgent) agent;
+				}
+			}
+		}
+		double dist = Math.sqrt(min);
+		double range = 2 * closestAgent.getRadius() + 200;
+		if (dist <= range) {
+			selectedAgent = closestAgent;
+		} else {
+			selectedAgent = null;
+		}
 	}
 
 	private Color getColorFood() {
@@ -329,7 +365,9 @@ public class Visualizator {
 		if (agent instanceof NeuralNetworkDrivenAgent) {
 			final int maxGeneration = environment.getLongestGeneration();
 			int generation = ((NeuralNetworkDrivenAgent) agent).getGeneration();
-			if (generation == maxGeneration) {
+			if (agent == selectedAgent) {
+				colorFlag = Color.CYAN;
+			} else if (generation == maxGeneration) {
 				colorFlag = Color.MAGENTA;
 			}
 		}
@@ -492,7 +530,15 @@ public class Visualizator {
 	private void drawAgents(Graphics2D canvas) {
 		List<FertileAgent> agents = environment.getFishes();
 		for (FertileAgent agent : agents) {
-			drawAgent(canvas, agent);
+			if (agent != selectedAgent) {
+				drawAgent(canvas, agent);
+			}
+		}
+		// Draw separately to mark food over last generation marks
+		if (agents.contains(selectedAgent)) {
+			drawAgent(canvas, selectedAgent);
+		} else {
+			selectedAgent = null;
 		}
 	}
 
