@@ -22,9 +22,6 @@ import java.util.Random;
 
 import com.lagodiuk.agent.AgentsEnvironment;
 import com.lagodiuk.agent.FertileAgent;
-import com.lagodiuk.agent.IFood;
-import com.lagodiuk.agent.MovingFood;
-import com.lagodiuk.agent.StaticFood;
 import com.lagodiuk.nn.NeuralNetwork;
 import com.lagodiuk.nn.NeuralNetworkDrivenAgent;
 
@@ -32,7 +29,6 @@ public class Runner {
 	private static final int MAX_ITERATIONS = 1000000;
 
 	private static AgentsEnvironment environment;
-	private static volatile boolean staticFood = false;
 	private static String filename = null;
 	private static boolean justStarted = true;
 
@@ -99,22 +95,6 @@ public class Runner {
 		initializeFood(foodCount);
 	}
 
-	private static IFood createRandomFood(int width, int height) {
-		int x = random.nextInt(width);
-		int y = random.nextInt(height);
-
-		IFood food = null;
-		if (staticFood) {
-			food = new StaticFood(x, y);
-		} else {
-			double speed = random.nextDouble() * 2;
-			double direction = random.nextDouble() * 2 * Math.PI;
-
-			food = new MovingFood(x, y, direction, speed);
-		}
-		return food;
-	}
-
 	private static void loadWorld(String filename) throws Exception {
 		File file = new File(filename);
 		FileInputStream in = new FileInputStream(file);
@@ -149,12 +129,8 @@ public class Runner {
 	}
 
 	private static void initializeFood(int foodCount) {
-		int environmentWidth = environment.getWidth();
-		int environmentHeight = environment.getHeight();
-
 		for (int i = 0; i < foodCount; i++) {
-			IFood food = createRandomFood(environmentWidth, environmentHeight);
-			environment.addFood(food);
+			environment.addNewRandomFood();
 		}
 	}
 

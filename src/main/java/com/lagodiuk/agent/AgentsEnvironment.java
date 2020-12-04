@@ -38,6 +38,7 @@ import com.lagodiuk.nn.genetic.OptimizableNeuralNetwork;
 @XmlRootElement(name="environment")
 public class AgentsEnvironment {
 	public static final boolean FOOD_CELL_DIVISION = true;
+	private static final boolean FOOD_STATIC = false;
 
 	@XmlElement
 	private int width;
@@ -102,21 +103,26 @@ public class AgentsEnvironment {
 		return filtered;
 	}
 
-	private IFood createRandomFood(int width, int height) {
-		boolean staticFood = false;
-		int x = random.nextInt(width);
-		int y = random.nextInt(height);
-
+	public IFood createRandomFood(int x, int y) {
 		IFood food = null;
-		if (staticFood) {
+		if (FOOD_STATIC) {
 			food = new StaticFood(x, y);
 		} else {
-			double speed = random.nextDouble() * 2;
+			double speed = random.nextDouble() * MovingFood.MAX_SPEED;
 			double direction = random.nextDouble() * 2 * Math.PI;
 
 			food = new MovingFood(x, y, direction, speed);
 		}
+		addFood(food);
 		return food;
+	}
+
+	public IFood addNewRandomFood() {
+		int x = random.nextInt(width);
+		int y = random.nextInt(height);
+
+		IFood newFood = createRandomFood(x, y);
+		return newFood;
 	}
 
 	private void addNewFood() {
@@ -129,7 +135,7 @@ public class AgentsEnvironment {
 				foodPool.remove(food);
 				energyReserve -= newFood.getEnergy();
 			} else {
-				IFood newFood = createRandomFood(this.getWidth(), this.getHeight());
+				IFood newFood = addNewRandomFood();
 				addFood(newFood);
 				energyReserve -= newFood.getEnergy();
 			}
@@ -241,7 +247,7 @@ public class AgentsEnvironment {
 		this.agents.remove(agent);
 	}
 
-	public void addFood(IFood food) {
+	private void addFood(IFood food) {
 		addAgent((AbstractAgent) food);
 	}
 

@@ -46,8 +46,6 @@ import com.lagodiuk.agent.FertileAgent;
 import com.lagodiuk.agent.IAgent;
 import com.lagodiuk.agent.IFood;
 import com.lagodiuk.agent.MovingAgent;
-import com.lagodiuk.agent.MovingFood;
-import com.lagodiuk.agent.StaticFood;
 import com.lagodiuk.nn.NeuralNetwork;
 import com.lagodiuk.nn.NeuralNetworkDrivenAgent;
 
@@ -61,8 +59,6 @@ public class Main {
 	private static AgentsEnvironment environment;
 
 	private static volatile boolean play = true;
-
-	private static volatile boolean staticFood = false;
 
 	// UI
 
@@ -207,22 +203,6 @@ public class Main {
 		initializeFood(foodCount);
 	}
 
-	private static IFood createRandomFood(int width, int height) {
-		int x = random.nextInt(width);
-		int y = random.nextInt(height);
-
-		IFood food = null;
-		if (staticFood) {
-			food = new StaticFood(x, y);
-		} else {
-			double speed = random.nextDouble() * 2;
-			double direction = random.nextDouble() * 2 * Math.PI;
-
-			food = new MovingFood(x, y, direction, speed);
-		}
-		return food;
-	}
-
 	private static void displayUI() {
 		// put application frame to the center of screen
 		appFrame.setLocationRelativeTo(null);
@@ -348,14 +328,11 @@ public class Main {
 		environmentPanel.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent click) {
-				double x = click.getX();
-				double y = click.getY();
+				int x = click.getX();
+				int y = click.getY();
 
 				if (SwingUtilities.isRightMouseButton(click)) {
-					IFood food = createRandomFood(1, 1);
-					food.setX(x);
-					food.setY(y);
-					environment.addFood(food);
+					environment.createRandomFood(x, y);
 				}
 			}
 		});
@@ -384,7 +361,7 @@ public class Main {
 		for (int i = 0; i < agentsCount; i++) {
 			int x = random.nextInt(environmentWidth);
 			int y = random.nextInt(environmentHeight);
-			double direction = random.nextDouble() * 2 * Math.PI;
+			double direction = random.nextDouble() * 2*Math.PI;
 			double speed = random.nextDouble() * MovingAgent.MAX_SPEED;
 
 			NeuralNetworkDrivenAgent agent = new NeuralNetworkDrivenAgent(x, y, direction, speed);
@@ -396,12 +373,8 @@ public class Main {
 	}
 
 	private static void initializeFood(int foodCount) {
-		int environmentWidth = environment.getWidth();
-		int environmentHeight = environment.getHeight();
-
 		for (int i = 0; i < foodCount; i++) {
-			IFood food = createRandomFood(environmentWidth, environmentHeight);
-			environment.addFood(food);
+			environment.addNewRandomFood();
 		}
 	}
 
