@@ -88,6 +88,8 @@ public class NeuralNetworkDrivenAgent extends FertileAgent {
 			this.activateNeuralNetwork(nnInputs);
 
 			int neuronsCount = this.brain.getNeuronsCount();
+			double newBornEnergy = this.brain.getAfterActivationSignal(neuronsCount - 4);
+			double parentPostBirthEnergy = this.brain.getAfterActivationSignal(neuronsCount - 3);
 			double deltaAngle = this.brain.getAfterActivationSignal(neuronsCount - 2);
 			double deltaSpeed = this.brain.getAfterActivationSignal(neuronsCount - 1);
 
@@ -99,6 +101,8 @@ public class NeuralNetworkDrivenAgent extends FertileAgent {
 
 			this.setAngle(newAngle);
 			this.setSpeed(newSpeed);
+			this.setNewbornEnergy((int) newBornEnergy);
+			this.setParentingEnergy((int) parentPostBirthEnergy);
 		}
 	}
 
@@ -148,6 +152,7 @@ public class NeuralNetworkDrivenAgent extends FertileAgent {
 		}
 
 		List<Double> nnInputs = new LinkedList<Double>();
+		nnInputs.add((double) getEnergy());
 
 		double rx = this.getRx();
 		double ry = this.getRy();
@@ -320,16 +325,17 @@ public class NeuralNetworkDrivenAgent extends FertileAgent {
 	@Override
 	public NeuralNetworkDrivenAgent reproduce(IEnvironment env) {
 		NeuralNetworkDrivenAgent newAgent = null;
-		if (getEnergy() >= PARENTING_ENERGY_DEFAULT) {
-			double newAngle = random.nextDouble();
-			double newSpeed = 0;
-			newAgent = new NeuralNetworkDrivenAgent(this.getX(), this.getY(), newAngle, newSpeed);
-			newAgent.generation = this.generation;
-			newAgent.setBrain(brain);
-			newAgent.mutate(MUTATE_CHANCE_NEWBORN);
-			setEnergy(getEnergy() - newAgent.getEnergy());
-			env.addAgent(newAgent);
-		}
+		int parentEnergy = getEnergy();
+		int childEnergy = getNewbornEnergy();
+		double newAngle = random.nextDouble();
+		double newSpeed = 0;
+		newAgent = new NeuralNetworkDrivenAgent(this.getX(), this.getY(), newAngle, newSpeed);
+		newAgent.generation = this.generation;
+		newAgent.setBrain(brain);
+		newAgent.mutate(MUTATE_CHANCE_NEWBORN);
+		newAgent.setEnergy(childEnergy);
+		setEnergy(parentEnergy - newAgent.getEnergy());
+		env.addAgent(newAgent);
 		return newAgent;
 	}
 

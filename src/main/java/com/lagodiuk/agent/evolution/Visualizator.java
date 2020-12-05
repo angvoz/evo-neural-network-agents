@@ -364,7 +364,8 @@ public class Visualizator {
 		String selectedStatus = "";
 		if (selectedAgent != null) {
 			selectedStatus = ",  Selected: energy=" + selectedAgent.getEnergy()
-					+ ", generation=" + selectedAgent.getGeneration();
+					+ ", generation=" + selectedAgent.getGeneration()
+					+ ", mommy energy=" + selectedAgent.getParentingEnergy() + ", child energy=" + selectedAgent.getNewbornEnergy() + ", fertile=" + selectedAgent.isFertile();
 		}
 		statusBar.setText("Time: " + (int) env.getTime() + ",   Energy Total: " + countEnergy + ",   Energy Reserve: "
 				+ energyReserve + ",   Food: " + countFood + ",   Fishes: " + countFishes + ",   Mutations: "
@@ -415,9 +416,10 @@ public class Visualizator {
 		Color colorBody = Color.GRAY;
 		if (!agent.isAlive()) {
 			colorBody = Color.BLACK;
-		} else {
-			int red = Math.max(255 - agent.getEnergy() * 25, 0);
-			int green = Math.min(agent.getEnergy() * 25, 255);
+		} else if (agent.isFertile()) {
+			int greenness = 255 * agent.getEnergy() / (agent.getParentingEnergy() + agent.getNewbornEnergy());
+			int red = Math.max(255 - greenness, 0);
+			int green = Math.min(greenness, 255);
 			colorBody = new Color(red, green, 0);
 		}
 		return colorBody;
@@ -427,15 +429,17 @@ public class Visualizator {
 		Color colorBodyOutline = Color.GRAY;
 		if (!agent.isAlive()) {
 			colorBodyOutline = Color.WHITE;
-		} else {
+		} else if (agent.isFertile()) {
 			int agentEnergy = agent.getEnergy();
 			if (agentEnergy <= 1) {
 				colorBodyOutline = Color.RED;
-			} else if (agentEnergy >= 9) {
+			} else if (agentEnergy >= (agent.getParentingEnergy() + agent.getNewbornEnergy())) {
 				colorBodyOutline = Color.GREEN;
 			} else {
 				colorBodyOutline = Color.WHITE;
 			}
+		} else if (agent.getRadius() > 2) {
+			colorBodyOutline = Color.LIGHT_GRAY;
 		}
 		return colorBodyOutline;
 	}

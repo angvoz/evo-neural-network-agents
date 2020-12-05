@@ -20,11 +20,14 @@ import javax.xml.bind.annotation.XmlElement;
 import com.lagodiuk.environment.IEnvironment;
 
 abstract public class FertileAgent extends MovingAgent {
-	protected static final int PARENTING_ENERGY_DEFAULT = 10;
+	private static final int PARENT_POSTBIRTH_ENERGY_DEFAULT = 10;
 	public static final int NEWBORN_ENERGY_DEFAULT = 6;
 
 	@XmlElement
 	private double age;
+
+	private int parentPostBirthEnergy = PARENT_POSTBIRTH_ENERGY_DEFAULT;
+	private int newbornEnergy = NEWBORN_ENERGY_DEFAULT;
 
 	protected FertileAgent() {
 	}
@@ -58,8 +61,10 @@ abstract public class FertileAgent extends MovingAgent {
 		super.interact(env);
 
 		feed(env);
-		reproduce(env);
 		grow(env);
+		if (isFertile() && getEnergy() > newbornEnergy + parentPostBirthEnergy) {
+			reproduce(env);
+		}
 	}
 
 	private void dissipateEnergy(IEnvironment env) {
@@ -82,6 +87,27 @@ abstract public class FertileAgent extends MovingAgent {
 	public void feed(IFood food) {
 		setEnergy(getEnergy() + food.getEnergy());
 		food.setEnergy(0);
+	}
+
+	public int getParentingEnergy() {
+		return parentPostBirthEnergy;
+	}
+
+	public void setParentingEnergy(int energy) {
+		this.parentPostBirthEnergy = energy;
+	}
+
+	public int getNewbornEnergy() {
+		return newbornEnergy;
+	}
+
+	public void setNewbornEnergy(int energy) {
+		this.newbornEnergy = energy;
+	}
+
+	public boolean isFertile() {
+		boolean result = newbornEnergy > 0 && parentPostBirthEnergy > 0;
+		return result;
 	}
 
 	abstract public FertileAgent reproduce(IEnvironment env);
