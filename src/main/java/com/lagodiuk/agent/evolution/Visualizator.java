@@ -594,8 +594,14 @@ public class Visualizator {
 
 		if (colorFlag != null) {
 			if (agent instanceof NeuralNetworkDrivenAgent) {
+				boolean closest = true;
 				for (AbstractAgent food : ((NeuralNetworkDrivenAgent) agent).getFoodInSight()) {
-					markFood(canvas, food, colorFlag);
+					if (closest) {
+						markFood(canvas, food, Color.WHITE);
+						closest = false;
+					} else {
+						markFood(canvas, food, colorFlag);
+					}
 				}
 			}
 		}
