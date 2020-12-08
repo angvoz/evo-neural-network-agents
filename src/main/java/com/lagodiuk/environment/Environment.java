@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ******************************************************************************/
-package com.lagodiuk.agent;
+package com.lagodiuk.environment;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -30,6 +30,13 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlTransient;
 
+import com.lagodiuk.agent.AbstractAgent;
+import com.lagodiuk.agent.FertileAgent;
+import com.lagodiuk.agent.IAgent;
+import com.lagodiuk.agent.IFood;
+import com.lagodiuk.agent.MovingAgent;
+import com.lagodiuk.agent.MovingFood;
+import com.lagodiuk.agent.StaticFood;
 import com.lagodiuk.nn.NeuralNetwork;
 import com.lagodiuk.nn.NeuralNetworkDrivenAgent;
 import com.lagodiuk.nn.genetic.OptimizableNeuralNetwork;
@@ -37,7 +44,7 @@ import com.lagodiuk.nn.genetic.OptimizableNeuralNetwork;
 @XmlSeeAlso({ StaticFood.class, MovingFood.class, OptimizableNeuralNetwork.class, NeuralNetworkDrivenAgent.class })
 
 @XmlRootElement(name="environment")
-public class AgentsEnvironment {
+public class Environment implements IEnvironment {
 	public static final boolean FOOD_CELL_DIVISION = true;
 	private static final boolean FOOD_STATIC = false;
 
@@ -65,28 +72,32 @@ public class AgentsEnvironment {
 	private Random random = new Random();
 
 	@SuppressWarnings("unused")
-	private AgentsEnvironment() {
+	private Environment() {
 	}
 
-	public AgentsEnvironment(int width, int height) {
+	public Environment(int width, int height) {
 		this.width = width;
 		this.height = height;
 		this.time = 0;
 		this.energyReserve = 0;
 	}
 
+	@Override
 	public int getWidth() {
 		return this.width;
 	}
 
+	@Override
 	public int getHeight() {
 		return this.height;
 	}
 
+	@Override
 	public double getTime() {
 		return this.time;
 	}
 
+	@Override
 	public List<FertileAgent> getFishes() {
 		List<FertileAgent> filtered = new ArrayList<FertileAgent>();
 		for (IAgent agent : this.agents) {
@@ -97,6 +108,7 @@ public class AgentsEnvironment {
 		return filtered;
 	}
 
+	@Override
 	public List<IFood> getFood() {
 		List<IFood> filtered = new ArrayList<IFood>();
 		for (IAgent agent : this.agents) {
@@ -128,6 +140,7 @@ public class AgentsEnvironment {
 		}
 	}
 
+	@Override
 	public void initialize(int agentsDensity, int foodDensity) {
 		int area = width * height;
 		// Density per million pixels
@@ -266,6 +279,7 @@ public class AgentsEnvironment {
 		return new ArrayList<IAgent>(this.agents);
 	}
 
+	@Override
 	public synchronized void addAgent(AbstractAgent agent) {
 		double x = agent.getX();
 		double y = agent.getY();
@@ -292,6 +306,7 @@ public class AgentsEnvironment {
 		this.agents.add(agent);
 	}
 
+	@Override
 	public synchronized void removeAgent(AbstractAgent agent) {
 		this.agents.remove(agent);
 	}
@@ -300,6 +315,7 @@ public class AgentsEnvironment {
 		removeAgent((AbstractAgent) food);
 	}
 
+	@Override
 	public synchronized void timeStep() {
 		interactAgents();
 		moveAgents();
@@ -334,19 +350,19 @@ public class AgentsEnvironment {
 		this.minNumberOfAgents = minNumberOfAgents;
 	}
 
-	public static void marshall(AgentsEnvironment env, OutputStream out) throws Exception {
+	public static void marshall(Environment env, OutputStream out) throws Exception {
 		env.countMutation = NeuralNetworkDrivenAgent.getMutationCount();
-		JAXBContext context = JAXBContext.newInstance(AgentsEnvironment.class);
+		JAXBContext context = JAXBContext.newInstance(Environment.class);
 		Marshaller marshaller = context.createMarshaller();
 		marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
 		marshaller.marshal(env, out);
 		out.flush();
 	}
 
-	public static AgentsEnvironment unmarshall(InputStream in) throws Exception {
-		JAXBContext context = JAXBContext.newInstance(AgentsEnvironment.class);
+	public static Environment unmarshall(InputStream in) throws Exception {
+		JAXBContext context = JAXBContext.newInstance(Environment.class);
 		Unmarshaller unmarshaller = context.createUnmarshaller();
-		AgentsEnvironment env = (AgentsEnvironment) unmarshaller.unmarshal(in);
+		Environment env = (Environment) unmarshaller.unmarshal(in);
 		NeuralNetworkDrivenAgent.setMutationCount(env.countMutation);
 		return env;
 	}

@@ -15,13 +15,13 @@
  ******************************************************************************/
 package com.lagodiuk.agent.evolution;
 
-import com.lagodiuk.agent.AgentsEnvironment;
+import com.lagodiuk.environment.Environment;
 
 public class Main {
 	private static Visualizator visualizator;
 
 	public static void main(String[] args) throws Exception {
-		AgentsEnvironment environment = new AgentsEnvironment(DefaultWorldParameters.environmentWidth, DefaultWorldParameters.environmentHeight);
+		Environment environment = new Environment(DefaultWorldParameters.environmentWidth, DefaultWorldParameters.environmentHeight);
 		environment.initialize(DefaultWorldParameters.agentsDensity, DefaultWorldParameters.foodDensity);
 		environment.setMinNumberOfAgents(DefaultWorldParameters.minNumberOfAgents);
 

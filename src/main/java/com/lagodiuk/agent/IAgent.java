@@ -15,6 +15,8 @@
  ******************************************************************************/
 package com.lagodiuk.agent;
 
+import com.lagodiuk.environment.IEnvironment;
+
 public interface IAgent {
 	double getRadius();
 	double getX();
@@ -23,5 +25,5 @@ public interface IAgent {
 	void setY(double y);
 
 	public int getEnergy();
-	void interact(AgentsEnvironment env);
+	void interact(IEnvironment env);
 }

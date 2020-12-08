@@ -22,6 +22,8 @@ import java.util.List;
 
 import org.junit.Test;
 
+import com.lagodiuk.environment.Environment;
+
 public class TestMovingAgent {
 	final static double DELTA_ZERO = 1E-10;
 
@@ -43,7 +45,7 @@ public class TestMovingAgent {
 
 	@Test
 	public void testBasic() {
-		AgentsEnvironment env = new AgentsEnvironment(100, 200);
+		Environment env = new Environment(100, 200);
 		MovingAgentMock agent = new MovingAgentMock(1.5, 2.5, ANGLE_RIGHT, 2);
 		assertEquals(1.5, agent.getX(), DELTA_ZERO);
 		assertEquals(2.5, agent.getY(), DELTA_ZERO);
@@ -63,7 +65,7 @@ public class TestMovingAgent {
 
 	@Test
 	public void testBoundaries() {
-		AgentsEnvironment env = new AgentsEnvironment(100, 200);
+		Environment env = new Environment(100, 200);
 		{
 			MovingAgentMock agent = new MovingAgentMock(99.0, 0.0, ANGLE_RIGHT, 1);
 			env.addAgent(agent);

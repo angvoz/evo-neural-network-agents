@@ -1,0 +1,23 @@
+package com.lagodiuk.environment;
+
+import java.util.List;
+
+import com.lagodiuk.agent.AbstractAgent;
+import com.lagodiuk.agent.FertileAgent;
+import com.lagodiuk.agent.IFood;
+
+public interface IEnvironment {
+	int getWidth();
+	int getHeight();
+	double getTime();
+
+	public void initialize(int agentsDensity, int foodDensity);
+
+	void addAgent(AbstractAgent agent);
+	void removeAgent(AbstractAgent agent);
+
+	List<IFood> getFood();
+	List<FertileAgent> getFishes();
+
+	void timeStep();
+}

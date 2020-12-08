@@ -17,6 +17,8 @@ package com.lagodiuk.agent;
 
 import java.util.Random;
 
+import com.lagodiuk.environment.IEnvironment;
+
 public class MovingFood extends MovingAgent implements IFood {
 	private static double RADIUS = 2;
 	private static int ENERGY = 1;
@@ -39,7 +41,7 @@ public class MovingFood extends MovingAgent implements IFood {
 	}
 
 	@Override
-	public MovingFood reproduce(AgentsEnvironment env) {
+	public MovingFood reproduce(IEnvironment env) {
 		Random random = new Random();
 		double angle = random.nextDouble() * 2*Math.PI;
 		double speed = random.nextDouble() * MAX_SPEED;

@@ -22,7 +22,7 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import com.lagodiuk.agent.AbstractAgent;
-import com.lagodiuk.agent.AgentsEnvironment;
+import com.lagodiuk.environment.Environment;
 
 public class TestNeuralNetworkDrivenAgent {
 	final static double LITTLE_BIT = 1E-10;
@@ -54,7 +54,7 @@ public class TestNeuralNetworkDrivenAgent {
 
 	@Test
 	public void testInSight_angles() {
-		AgentsEnvironment env = new AgentsEnvironment(200, 200);
+		Environment env = new Environment(200, 200);
 		NeuralNetworkDrivenAgentMock agent = new NeuralNetworkDrivenAgentMock(100.0, 100.0, ANGLE_RIGHT, 1);
 		env.addAgent(agent);
 
@@ -132,7 +132,7 @@ public class TestNeuralNetworkDrivenAgent {
 
 	@Test
 	public void testInSight_distance() {
-		AgentsEnvironment env = new AgentsEnvironment(200, 200);
+		Environment env = new Environment(200, 200);
 		NeuralNetworkDrivenAgentMock agent = new NeuralNetworkDrivenAgentMock(100.0, 100.0, ANGLE_RIGHT, 1);
 		env.addAgent(agent);
 
@@ -180,7 +180,7 @@ public class TestNeuralNetworkDrivenAgent {
 	public void testInSightBoundary_fromBottomRight_toRight() {
 		final int XMAX = 200;
 		final int YMAX = 300;
-		AgentsEnvironment env = new AgentsEnvironment(XMAX, YMAX);
+		Environment env = new Environment(XMAX, YMAX);
 		NeuralNetworkDrivenAgentMock agent = new NeuralNetworkDrivenAgentMock(XMAX, 0.0, ANGLE_RIGHT, 1);
 		env.addAgent(agent);
 
@@ -248,7 +248,7 @@ public class TestNeuralNetworkDrivenAgent {
 	public void testInSightBoundary_fromBottomRight_toBottom() {
 		final int XMAX = 200;
 		final int YMAX = 300;
-		AgentsEnvironment env = new AgentsEnvironment(XMAX, YMAX);
+		Environment env = new Environment(XMAX, YMAX);
 		NeuralNetworkDrivenAgentMock agent = new NeuralNetworkDrivenAgentMock(XMAX, 0.0, ANGLE_DOWN, 1);
 		env.addAgent(agent);
 
@@ -316,7 +316,7 @@ public class TestNeuralNetworkDrivenAgent {
 	public void testInSightBoundary_fromBottomLeft_toBottom() {
 		final int XMAX = 200;
 		final int YMAX = 300;
-		AgentsEnvironment env = new AgentsEnvironment(XMAX, YMAX);
+		Environment env = new Environment(XMAX, YMAX);
 		NeuralNetworkDrivenAgentMock agent = new NeuralNetworkDrivenAgentMock(0.0, 0.0, ANGLE_DOWN, 1);
 		env.addAgent(agent);
 
@@ -384,7 +384,7 @@ public class TestNeuralNetworkDrivenAgent {
 	public void testInSightBoundary_fromBottomLeft_toLeft() {
 		final int XMAX = 200;
 		final int YMAX = 300;
-		AgentsEnvironment env = new AgentsEnvironment(XMAX, YMAX);
+		Environment env = new Environment(XMAX, YMAX);
 		NeuralNetworkDrivenAgentMock agent = new NeuralNetworkDrivenAgentMock(0.0, 0.0, ANGLE_LEFT, 1);
 		env.addAgent(agent);
 
@@ -452,7 +452,7 @@ public class TestNeuralNetworkDrivenAgent {
 	public void testInSightBoundary_fromTopLeft_toLeft() {
 		final int XMAX = 200;
 		final int YMAX = 300;
-		AgentsEnvironment env = new AgentsEnvironment(XMAX, YMAX);
+		Environment env = new Environment(XMAX, YMAX);
 		NeuralNetworkDrivenAgentMock agent = new NeuralNetworkDrivenAgentMock(0.0, YMAX, ANGLE_LEFT, 1);
 		env.addAgent(agent);
 
@@ -520,7 +520,7 @@ public class TestNeuralNetworkDrivenAgent {
 	public void testInSightBoundary_fromTopLeft_toUp() {
 		final int XMAX = 200;
 		final int YMAX = 300;
-		AgentsEnvironment env = new AgentsEnvironment(XMAX, YMAX);
+		Environment env = new Environment(XMAX, YMAX);
 		NeuralNetworkDrivenAgentMock agent = new NeuralNetworkDrivenAgentMock(0.0, YMAX, ANGLE_UP, 1);
 		env.addAgent(agent);
 
@@ -588,7 +588,7 @@ public class TestNeuralNetworkDrivenAgent {
 	public void testInSightBoundary_fromTopRight_toUp() {
 		final int XMAX = 200;
 		final int YMAX = 300;
-		AgentsEnvironment env = new AgentsEnvironment(XMAX, YMAX);
+		Environment env = new Environment(XMAX, YMAX);
 		NeuralNetworkDrivenAgentMock agent = new NeuralNetworkDrivenAgentMock(XMAX, YMAX, ANGLE_UP, 1);
 		env.addAgent(agent);
 
@@ -656,7 +656,7 @@ public class TestNeuralNetworkDrivenAgent {
 	public void testInSightBoundary_fromTopRight_toRight() {
 		final int XMAX = 200;
 		final int YMAX = 300;
-		AgentsEnvironment env = new AgentsEnvironment(XMAX, YMAX);
+		Environment env = new Environment(XMAX, YMAX);
 		NeuralNetworkDrivenAgentMock agent = new NeuralNetworkDrivenAgentMock(XMAX, YMAX, ANGLE_RIGHT, 1);
 		env.addAgent(agent);
 
@@ -724,7 +724,7 @@ public class TestNeuralNetworkDrivenAgent {
 	public void testInSightBoundary_fromTopRight_toRightUp() {
 		final int XMAX = 200;
 		final int YMAX = 300;
-		AgentsEnvironment env = new AgentsEnvironment(XMAX, YMAX);
+		Environment env = new Environment(XMAX, YMAX);
 		NeuralNetworkDrivenAgentMock agent = new NeuralNetworkDrivenAgentMock(XMAX, YMAX, ANGLE_RIGHT_UP, 1);
 		env.addAgent(agent);
 

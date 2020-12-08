@@ -22,10 +22,10 @@ import java.util.Random;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlTransient;
 
-import com.lagodiuk.agent.AgentsEnvironment;
 import com.lagodiuk.agent.FertileAgent;
 import com.lagodiuk.agent.IAgent;
 import com.lagodiuk.agent.IFood;
+import com.lagodiuk.environment.IEnvironment;
 import com.lagodiuk.nn.genetic.OptimizableNeuralNetwork;
 
 public class NeuralNetworkDrivenAgent extends FertileAgent {
@@ -85,7 +85,7 @@ public class NeuralNetworkDrivenAgent extends FertileAgent {
 	 * simplest solution doesn't cause any overheads
 	 */
 	@Override
-	public synchronized void interact(AgentsEnvironment env) {
+	public synchronized void interact(IEnvironment env) {
 		List<Double> nnInputs = this.createNnInputs(env);
 
 		this.activateNeuralNetwork(nnInputs);
@@ -120,7 +120,7 @@ public class NeuralNetworkDrivenAgent extends FertileAgent {
 		this.brain.activate();
 	}
 
-	protected List<Double> createNnInputs(AgentsEnvironment environment) {
+	protected List<Double> createNnInputs(IEnvironment environment) {
 		// Find nearest food
 		IFood nearestFood = null;
 		double nearestFoodDist = Double.MAX_VALUE;
@@ -211,7 +211,7 @@ public class NeuralNetworkDrivenAgent extends FertileAgent {
 		return result;
 	}
 
-	public boolean inSight(IAgent agent, AgentsEnvironment env) {
+	public boolean inSight(IAgent agent, IEnvironment env) {
 		double x = agent.getX();
 		double y = agent.getY();
 		if (inSightInternal(x, y)) {
@@ -318,7 +318,7 @@ public class NeuralNetworkDrivenAgent extends FertileAgent {
 	}
 
 	@Override
-	public NeuralNetworkDrivenAgent reproduce(AgentsEnvironment env) {
+	public NeuralNetworkDrivenAgent reproduce(IEnvironment env) {
 		NeuralNetworkDrivenAgent newAgent = null;
 		if (getEnergy() >= PARENTING_ENERGY_DEFAULT) {
 			double newAngle = random.nextDouble();

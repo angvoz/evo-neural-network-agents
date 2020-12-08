@@ -17,6 +17,8 @@ package com.lagodiuk.agent;
 
 import java.util.Random;
 
+import com.lagodiuk.environment.IEnvironment;
+
 public class StaticFood extends AbstractAgent implements IFood {
 	private static double RADIUS = 2;
 	private static int ENERGY = 1;
@@ -38,7 +40,7 @@ public class StaticFood extends AbstractAgent implements IFood {
 	}
 
 	@Override
-	public StaticFood reproduce(AgentsEnvironment env) {
+	public StaticFood reproduce(IEnvironment env) {
 		Random random = new Random();
 		int x = random.nextInt(env.getWidth());
 		int y = random.nextInt(env.getHeight());

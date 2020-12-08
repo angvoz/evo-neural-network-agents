@@ -18,6 +18,8 @@ package com.lagodiuk.agent;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlTransient;
 
+import com.lagodiuk.environment.IEnvironment;
+
 abstract public class AbstractAgent implements IAgent {
 	private double x;
 	private double y;
@@ -67,6 +69,6 @@ abstract public class AbstractAgent implements IAgent {
 	}
 
 	@Override
-	public void interact(AgentsEnvironment env) {
+	public void interact(IEnvironment env) {
 	}
 }

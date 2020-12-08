@@ -19,12 +19,12 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 
-import com.lagodiuk.agent.AgentsEnvironment;
+import com.lagodiuk.environment.Environment;
 
 public class Runner {
 	private static final int MAX_ITERATIONS = 1000000;
 
-	private static AgentsEnvironment environment;
+	private static Environment environment;
 	private static String filename = null;
 	private static boolean justStarted = true;
 
@@ -72,7 +72,7 @@ public class Runner {
 	}
 
 	private static void createWorld() {
-		environment = new AgentsEnvironment(DefaultWorldParameters.environmentWidth, DefaultWorldParameters.environmentHeight);
+		environment = new Environment(DefaultWorldParameters.environmentWidth, DefaultWorldParameters.environmentHeight);
 		environment.initialize(DefaultWorldParameters.agentsDensity, DefaultWorldParameters.foodDensity);
 		environment.setMinNumberOfAgents(DefaultWorldParameters.minNumberOfAgents);
 	}
@@ -80,14 +80,14 @@ public class Runner {
 	private static void loadWorld(String filename) throws Exception {
 		File file = new File(filename);
 		FileInputStream in = new FileInputStream(file);
-		environment = AgentsEnvironment.unmarshall(in);
+		environment = Environment.unmarshall(in);
 		in.close();
 	}
 
 	private static void saveWorld(String filename) throws Exception {
 		File file = new File(filename);
 		FileOutputStream out = new FileOutputStream(file);
-		AgentsEnvironment.marshall(environment, out);
+		Environment.marshall(environment, out);
 		out.close();
 	}
 }

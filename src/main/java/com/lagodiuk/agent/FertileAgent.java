@@ -17,6 +17,8 @@ package com.lagodiuk.agent;
 
 import javax.xml.bind.annotation.XmlElement;
 
+import com.lagodiuk.environment.IEnvironment;
+
 abstract public class FertileAgent extends MovingAgent {
 	protected static final int PARENTING_ENERGY_DEFAULT = 10;
 	public static final int NEWBORN_ENERGY_DEFAULT = 6;
@@ -54,5 +56,5 @@ abstract public class FertileAgent extends MovingAgent {
 		setEnergy(getEnergy() + food.getEnergy());
 	}
 
-	abstract public FertileAgent reproduce(AgentsEnvironment env);
+	abstract public FertileAgent reproduce(IEnvironment env);
 }

@@ -47,17 +47,17 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import com.lagodiuk.agent.AbstractAgent;
-import com.lagodiuk.agent.AgentsEnvironment;
 import com.lagodiuk.agent.FertileAgent;
 import com.lagodiuk.agent.IAgent;
 import com.lagodiuk.agent.IFood;
 import com.lagodiuk.agent.MovingAgent;
+import com.lagodiuk.environment.Environment;
 import com.lagodiuk.nn.NeuralNetworkDrivenAgent;
 
 public class Visualizator {
 	private static final String PREFS_KEY_SAVE_DIRECTORY = "BrainsDirectory";
 
-	private AgentsEnvironment environment;
+	private Environment environment;
 
 	private static JFrame appFrame;
 	private static JPanel environmentPanel;
@@ -115,11 +115,11 @@ public class Visualizator {
 		}
 	}
 
-	public Visualizator(AgentsEnvironment environment) {
+	public Visualizator(Environment environment) {
 		this.environment = environment;
 	}
 
-	public AgentsEnvironment getEnvironment() {
+	public Environment getEnvironment() {
 		return environment;
 	}
 
@@ -236,7 +236,7 @@ public class Visualizator {
 						prefs.put(PREFS_KEY_SAVE_DIRECTORY, file.getParent());
 
 						FileInputStream in = new FileInputStream(file);
-						environment = AgentsEnvironment.unmarshall(in);
+						environment = Environment.unmarshall(in);
 						in.close();
 					} catch (Exception e) {
 						e.printStackTrace();
@@ -261,7 +261,7 @@ public class Visualizator {
 						prefs.put(PREFS_KEY_SAVE_DIRECTORY, file.getParent());
 
 						FileOutputStream out = new FileOutputStream(file);
-						AgentsEnvironment.marshall(environment, out);
+						Environment.marshall(environment, out);
 						out.close();
 					} catch (Exception e) {
 						e.printStackTrace();
@@ -314,7 +314,7 @@ public class Visualizator {
 		});
 	}
 
-	private void updateStatusBar(AgentsEnvironment env) {
+	private void updateStatusBar(Environment env) {
 		int countFishes = 0;
 		int countFood = 0;
 		int energyReserve = env.getEnergyReserve();

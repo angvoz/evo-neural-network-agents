@@ -15,6 +15,8 @@
  ******************************************************************************/
 package com.lagodiuk.agent;
 
+import com.lagodiuk.environment.IEnvironment;
+
 public abstract class MovingAgent extends AbstractAgent {
 	public static final double MAX_SPEED = 4;
 
@@ -69,7 +71,7 @@ public abstract class MovingAgent extends AbstractAgent {
 		return Math.sqrt((vx1 * vx1) + (vy1 * vy1));
 	}
 
-	private void collide(AgentsEnvironment env, MovingAgent otherAgent) {
+	private void collide(IEnvironment env, MovingAgent otherAgent) {
 		// Check if the agent moves towards the other one (angle less than 90 degree)
 		double ux = otherAgent.getX() - this.getX();
 		double uy = otherAgent.getY() - this.getY();
@@ -92,7 +94,7 @@ public abstract class MovingAgent extends AbstractAgent {
 		}
 	}
 
-	private void collide(AgentsEnvironment env) {
+	private void collide(IEnvironment env) {
 		if (!(this instanceof IFood) && getEnergy() > 0) {
 			for (MovingAgent otherAgent : env.getFishes()) {
 				if (this != otherAgent && !(otherAgent instanceof IFood) && otherAgent.getEnergy() > 0) {
@@ -106,7 +108,7 @@ public abstract class MovingAgent extends AbstractAgent {
 		}
 	}
 
-	protected void move(AgentsEnvironment env) {
+	public void move(IEnvironment env) {
 		collide(env);
 
 		env.removeAgent(this);
